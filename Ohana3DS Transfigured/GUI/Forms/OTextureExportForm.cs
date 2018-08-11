@@ -33,17 +33,17 @@ namespace Ohana3DS_Transfigured.GUI.Forms
         {
             switch (e.KeyCode)
             {
-                case Keys.Enter: ok(); break;
+                case Keys.Enter: Ok(); break;
                 case Keys.Escape: Close(); break;
             }
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
         {
-            ok();
+            Ok();
         }
 
-        private void ok()
+        private void Ok()
         {
             if (!Directory.Exists(TxtOutFolder.Text))
             {

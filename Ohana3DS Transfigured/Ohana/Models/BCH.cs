@@ -26,7 +26,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 {
     public class BCH
     {
-        private struct bchHeader
+        private struct BchHeader
         {
             public string magic;
             public byte backwardCompatibility;
@@ -53,7 +53,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             public ushort addressCount;
         }
 
-        private struct bchContentHeader
+        private struct BchContentHeader
         {
             public uint modelsPointerTableOffset;
             public uint modelsPointerTableEntries;
@@ -102,7 +102,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             public uint sceneNameOffset;
         }
 
-        private struct bchModelHeader
+        private struct BchModelHeader
         {
             public byte flags;
             public byte skeletonScalingType;
@@ -125,7 +125,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             public uint metaDataPointerOffset;
         }
 
-        private struct bchObjectEntry
+        private struct BchObjectEntry
         {
             public ushort materialId;
             public bool isSilhouette;
@@ -148,9 +148,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="fileName">File Name of the BCH file</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
-            return load(new MemoryStream(File.ReadAllBytes(fileName)));
+            return Load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="data">Memory Stream of the BCH file. The Stream will not be usable after</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup load(MemoryStream data)
+        public static RenderBase.OModelGroup Load(MemoryStream data)
         {
             BinaryReader input = new BinaryReader(data);
             BinaryWriter writer = new BinaryWriter(data);
@@ -167,8 +167,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
             //Primary header
-            bchHeader header = new bchHeader();
-            header.magic = IOUtils.readString(input, 0);
+            BchHeader header = new BchHeader
+            {
+                magic = IOUtils.ReadString(input, 0)
+            };
             data.Seek(4, SeekOrigin.Current);
             header.backwardCompatibility = input.ReadByte();
             header.forwardCompatibility = input.ReadByte();
@@ -209,23 +211,23 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 {
                     case 0:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
-                        writer.Write(peek(input) + header.mainHeaderOffset);
+                        writer.Write(Peek(input) + header.mainHeaderOffset);
                         break;
 
                     case 1:
                         data.Seek(offset + header.mainHeaderOffset, SeekOrigin.Begin);
-                        writer.Write(peek(input) + header.stringTableOffset);
+                        writer.Write(Peek(input) + header.stringTableOffset);
                         break;
 
                     case 2:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
-                        writer.Write(peek(input) + header.gpuCommandsOffset);
+                        writer.Write(Peek(input) + header.gpuCommandsOffset);
                         break;
 
                     case 7:
                     case 0xc:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
-                        writer.Write(peek(input) + header.dataOffset);
+                        writer.Write(Peek(input) + header.dataOffset);
                         break;
                 }
 
@@ -235,50 +237,50 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 {
                     switch (flags)
                     {
-                        case 0x23: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Vertex
-                        case 0x26: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x27: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x23: writer.Write(Peek(input) + header.dataOffset); break; //Texture
+                        case 0x25: writer.Write(Peek(input) + header.dataOffset); break; //Vertex
+                        case 0x26: writer.Write(((Peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x27: writer.Write((Peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else if (header.backwardCompatibility < 8)
                 {
                     switch (flags)
                     {
-                        case 0x24: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x26: writer.Write(peek(input) + header.dataOffset); break; //Vertex
-                        case 0x27: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x28: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x24: writer.Write(Peek(input) + header.dataOffset); break; //Texture
+                        case 0x26: writer.Write(Peek(input) + header.dataOffset); break; //Vertex
+                        case 0x27: writer.Write(((Peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x28: writer.Write((Peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else if (header.backwardCompatibility < 0x21)
                 {
                     switch (flags)
                     {
-                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x27: writer.Write(peek(input) + header.dataOffset); break; //Vertex
-                        case 0x28: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x29: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x25: writer.Write(Peek(input) + header.dataOffset); break; //Texture
+                        case 0x27: writer.Write(Peek(input) + header.dataOffset); break; //Vertex
+                        case 0x28: writer.Write(((Peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x29: writer.Write((Peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else
                 {
                     switch (flags)
                     {
-                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x26: writer.Write(peek(input) + header.dataOffset); break; //Vertex relative to Data Offset
-                        case 0x27: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Offset
-                        case 0x28: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Offset
-                        case 0x2b: writer.Write(peek(input) + header.dataExtendedOffset); break; //Vertex relative to Data Extended Offset
-                        case 0x2c: writer.Write(((peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Extended Offset
-                        case 0x2d: writer.Write((peek(input) + header.dataExtendedOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Extended Offset
+                        case 0x25: writer.Write(Peek(input) + header.dataOffset); break; //Texture
+                        case 0x26: writer.Write(Peek(input) + header.dataOffset); break; //Vertex relative to Data Offset
+                        case 0x27: writer.Write(((Peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Offset
+                        case 0x28: writer.Write((Peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Offset
+                        case 0x2b: writer.Write(Peek(input) + header.dataExtendedOffset); break; //Vertex relative to Data Extended Offset
+                        case 0x2c: writer.Write(((Peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Extended Offset
+                        case 0x2d: writer.Write((Peek(input) + header.dataExtendedOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Extended Offset
                     }
                 }
             }
 
             //Content header
             data.Seek(header.mainHeaderOffset, SeekOrigin.Begin);
-            bchContentHeader contentHeader = new bchContentHeader
+            BchContentHeader contentHeader = new BchContentHeader
             {
                 modelsPointerTableOffset = input.ReadUInt32(),
                 modelsPointerTableEntries = input.ReadUInt32(),
@@ -349,7 +351,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint textureCommandsOffset = input.ReadUInt32();
                 uint textureCommandsWordCount = input.ReadUInt32();
                 data.Seek(0x14, SeekOrigin.Current);
-                string textureName = readString(input);
+                string textureName = ReadString(input);
 
                 data.Seek(textureCommandsOffset, SeekOrigin.Begin);
                 PICACommandReader textureCommands = new PICACommandReader(data, textureCommandsWordCount);
@@ -357,11 +359,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 //Note: It have textures for the 3 texture units.
                 //The other texture units are used with textureCoordinate1 and 2.
                 Bitmap texture = null;
-                data.Seek(textureCommands.getTexUnit0Address(), SeekOrigin.Begin);
-                Size textureSize = textureCommands.getTexUnit0Size();
+                data.Seek(textureCommands.GetTexUnit0Address(), SeekOrigin.Begin);
+                Size textureSize = textureCommands.GetTexUnit0Size();
                 byte[] buffer = new byte[textureSize.Width * textureSize.Height * 4];
                 input.Read(buffer, 0, buffer.Length);
-                texture = TextureCodec.decode(buffer, textureSize.Width, textureSize.Height, textureCommands.getTexUnit0Format());
+                texture = TextureCodec.Decode(buffer, textureSize.Width, textureSize.Height, textureCommands.GetTexUnit0Format());
 
                 models.texture.Add(new RenderBase.OTexture(texture, textureName));
             }
@@ -375,10 +377,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
                 input.ReadUInt32();
                 uint samplersCount = input.ReadUInt32();
-                string name = readString(input);
+                string name = ReadString(input);
 
-                RenderBase.OLookUpTable table = new RenderBase.OLookUpTable();
-                table.name = name;
+                RenderBase.OLookUpTable table = new RenderBase.OLookUpTable
+                {
+                    name = name
+                };
                 for (int i = 0; i < samplersCount; i++)
                 {
                     RenderBase.OLookUpTableSampler sampler = new RenderBase.OLookUpTableSampler();
@@ -386,12 +390,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     input.ReadUInt32();
                     uint tableOffset = input.ReadUInt32();
                     uint tableWordCount = input.ReadUInt32();
-                    sampler.name = readString(input);
+                    sampler.name = ReadString(input);
 
                     long dataPosition = data.Position;
                     data.Seek(tableOffset, SeekOrigin.Begin);
                     PICACommandReader lutCommands = new PICACommandReader(data, tableWordCount);
-                    sampler.table = lutCommands.getFSHLookUpTable();
+                    sampler.table = lutCommands.GetFSHLookUpTable();
                     table.sampler.Add(sampler);
 
                     data.Seek(dataPosition, SeekOrigin.Begin);
@@ -407,11 +411,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OLight light = new RenderBase.OLight();
-                light.name = readString(input);
-                light.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                light.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                light.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                RenderBase.OLight light = new RenderBase.OLight
+                {
+                    name = ReadString(input),
+                    transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle())
+                };
 
                 uint lightFlags = input.ReadUInt32();
                 switch (lightFlags & 0xf)
@@ -452,15 +458,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 switch (light.lightUse)
                 {
                     case RenderBase.OLightUse.hemiSphere:
-                        light.groundColor = MeshUtils.getColorFloat(input);
-                        light.skyColor = MeshUtils.getColorFloat(input);
+                        light.groundColor = MeshUtils.GetColorFloat(input);
+                        light.skyColor = MeshUtils.GetColorFloat(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         light.lerpFactor = input.ReadSingle();
                         break;
-                    case RenderBase.OLightUse.ambient: light.ambient = MeshUtils.getColor(input); break;
+                    case RenderBase.OLightUse.ambient: light.ambient = MeshUtils.GetColor(input); break;
                     case RenderBase.OLightUse.vertex:
-                        light.ambient = MeshUtils.getColorFloat(input);
-                        light.diffuse = MeshUtils.getColorFloat(input);
+                        light.ambient = MeshUtils.GetColorFloat(input);
+                        light.diffuse = MeshUtils.GetColorFloat(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         light.distanceAttenuationConstant = input.ReadSingle();
                         light.distanceAttenuationLinear = input.ReadSingle();
@@ -469,21 +475,21 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         light.spotCutoffAngle = input.ReadSingle();
                         break;
                     case RenderBase.OLightUse.fragment:
-                        light.ambient = MeshUtils.getColor(input);
-                        light.diffuse = MeshUtils.getColor(input);
-                        light.specular0 = MeshUtils.getColor(input);
-                        light.specular1 = MeshUtils.getColor(input);
+                        light.ambient = MeshUtils.GetColor(input);
+                        light.diffuse = MeshUtils.GetColor(input);
+                        light.specular0 = MeshUtils.GetColor(input);
+                        light.specular1 = MeshUtils.GetColor(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         input.ReadUInt32();
                         input.ReadUInt32();
                         light.attenuationStart = input.ReadSingle();
                         light.attenuationEnd = input.ReadSingle();
 
-                        light.distanceSampler.tableName = readString(input);
-                        light.distanceSampler.samplerName = readString(input);
+                        light.distanceSampler.tableName = ReadString(input);
+                        light.distanceSampler.samplerName = ReadString(input);
 
-                        light.angleSampler.tableName = readString(input);
-                        light.angleSampler.samplerName = readString(input);
+                        light.angleSampler.tableName = ReadString(input);
+                        light.angleSampler.samplerName = ReadString(input);
                         break;
                 }
 
@@ -497,11 +503,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OCamera camera = new RenderBase.OCamera();
-                camera.name = readString(input);
-                camera.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                camera.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                camera.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                RenderBase.OCamera camera = new RenderBase.OCamera
+                {
+                    name = ReadString(input),
+                    transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle())
+                };
 
                 uint cameraFlags = input.ReadUInt32();
                 camera.isInheritingTargetRotate = (cameraFlags & 0x10000) > 0;
@@ -546,18 +554,20 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OFog fog = new RenderBase.OFog();
-                fog.name = readString(input);
-                fog.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                fog.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                fog.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                RenderBase.OFog fog = new RenderBase.OFog
+                {
+                    name = ReadString(input),
+                    transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                    transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle())
+                };
 
                 uint fogFlags = input.ReadUInt32();
                 fog.fogUpdater = (RenderBase.OFogUpdater)(fogFlags & 0xf);
                 fog.isZFlip = (fogFlags & 0x100) > 0;
                 fog.isAttenuateDistance = (fogFlags & 0x200) > 0;
 
-                fog.fogColor = MeshUtils.getColor(input);
+                fog.fogColor = MeshUtils.GetColor(input);
 
                 fog.minFogDepth = input.ReadSingle();
                 fog.maxFogDepth = input.ReadSingle();
@@ -573,12 +583,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OSkeletalAnimation skeletalAnimation = new RenderBase.OSkeletalAnimation();
-
-                skeletalAnimation.name = readString(input);
+                RenderBase.OSkeletalAnimation skeletalAnimation = new RenderBase.OSkeletalAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                skeletalAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                skeletalAnimation.frameSize = input.ReadSingle();
+                skeletalAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                skeletalAnimation.FrameSize = input.ReadSingle();
                 uint boneTableOffset = input.ReadUInt32();
                 uint boneTableEntries = input.ReadUInt32();
                 uint metaDataPointerOffset = input.ReadUInt32();
@@ -586,7 +597,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 if (metaDataPointerOffset != 0)
                 {
                     data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
-                    skeletalAnimation.userData = getMetaData(input);
+                    skeletalAnimation.userData = GetMetaData(input);
                 }
 
                 for (int i = 0; i < boneTableEntries; i++)
@@ -597,7 +608,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    bone.name = readString(input);
+                    bone.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
                     input.ReadUInt32();
@@ -618,8 +629,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                                     bool notExist = (flags & notExistMask) > 0;
                                     bool constant = (flags & constantMask) > 0;
 
-                                    RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
-                                    frame.exists = !notExist;
+                                    RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup
+                                    {
+                                        exists = !notExist
+                                    };
                                     if (frame.exists)
                                     {
                                         if (constant)
@@ -632,7 +645,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                                             uint frameOffset = input.ReadUInt32();
                                             long position = data.Position;
                                             data.Seek(frameOffset, SeekOrigin.Begin);
-                                            getAnimationKeyFrame(input, frame);
+                                            GetAnimationKeyFrame(input, frame);
                                             data.Seek(position, SeekOrigin.Begin);
                                         }
                                     }
@@ -752,21 +765,23 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             data.Seek(matrixOffset, SeekOrigin.Begin);
                             for (int j = 0; j < entries; j++)
                             {
-                                RenderBase.OMatrix transform = new RenderBase.OMatrix();
-                                transform.M11 = input.ReadSingle();
-                                transform.M21 = input.ReadSingle();
-                                transform.M31 = input.ReadSingle();
-                                transform.M41 = input.ReadSingle();
+                                RenderBase.OMatrix transform = new RenderBase.OMatrix
+                                {
+                                    M11 = input.ReadSingle(),
+                                    M21 = input.ReadSingle(),
+                                    M31 = input.ReadSingle(),
+                                    M41 = input.ReadSingle(),
 
-                                transform.M12 = input.ReadSingle();
-                                transform.M22 = input.ReadSingle();
-                                transform.M32 = input.ReadSingle();
-                                transform.M42 = input.ReadSingle();
+                                    M12 = input.ReadSingle(),
+                                    M22 = input.ReadSingle(),
+                                    M32 = input.ReadSingle(),
+                                    M42 = input.ReadSingle(),
 
-                                transform.M13 = input.ReadSingle();
-                                transform.M23 = input.ReadSingle();
-                                transform.M33 = input.ReadSingle();
-                                transform.M43 = input.ReadSingle();
+                                    M13 = input.ReadSingle(),
+                                    M23 = input.ReadSingle(),
+                                    M33 = input.ReadSingle(),
+                                    M43 = input.ReadSingle()
+                                };
 
                                 bone.transform.Add(transform);
                             }
@@ -788,12 +803,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OMaterialAnimation materialAnimation = new RenderBase.OMaterialAnimation();
-
-                materialAnimation.name = readString(input);
+                RenderBase.OMaterialAnimation materialAnimation = new RenderBase.OMaterialAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                materialAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                materialAnimation.frameSize = input.ReadSingle();
+                materialAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                materialAnimation.FrameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32();
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
@@ -803,7 +819,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 data.Seek(textureNameTableOffset, SeekOrigin.Begin);
                 for (int i = 0; i < textureNameTableEntries; i++)
                 {
-                    string name = readString(input);
+                    string name = ReadString(input);
                     materialAnimation.textureName.Add(name);
                 }
 
@@ -815,7 +831,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OMaterialAnimationData animationData = new RenderBase.OMaterialAnimationData();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    animationData.name = readString(input);
+                    animationData.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
 
@@ -851,7 +867,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                getAnimationKeyFrame(input, frame);
+                                GetAnimationKeyFrame(input, frame);
                             }
                         }
 
@@ -871,12 +887,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OVisibilityAnimation visibilityAnimation = new RenderBase.OVisibilityAnimation();
-
-                visibilityAnimation.name = readString(input);
+                RenderBase.OVisibilityAnimation visibilityAnimation = new RenderBase.OVisibilityAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                visibilityAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                visibilityAnimation.frameSize = input.ReadSingle();
+                visibilityAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                visibilityAnimation.FrameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32();
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
@@ -890,7 +907,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OVisibilityAnimationData animationData = new RenderBase.OVisibilityAnimationData();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    animationData.name = readString(input);
+                    animationData.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
 
@@ -898,7 +915,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     if (segmentType == RenderBase.OSegmentType.boolean)
                     {
                         RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
-                        if (segmentType == RenderBase.OSegmentType.boolean) frame = getAnimationKeyFrameBool(input);
+                        if (segmentType == RenderBase.OSegmentType.boolean) frame = GetAnimationKeyFrameBool(input);
                         animationData.visibilityList = frame;
                     }
 
@@ -915,12 +932,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OLightAnimation lightAnimation = new RenderBase.OLightAnimation();
-
-                lightAnimation.name = readString(input);
+                RenderBase.OLightAnimation lightAnimation = new RenderBase.OLightAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                lightAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                lightAnimation.frameSize = input.ReadSingle();
+                lightAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                lightAnimation.FrameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32();
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
@@ -936,7 +954,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OLightAnimationData animationData = new RenderBase.OLightAnimationData();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    animationData.name = readString(input);
+                    animationData.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
 
@@ -966,7 +984,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         {
                             if (segmentType == RenderBase.OSegmentType.boolean)
                             {
-                                frame = getAnimationKeyFrameBool(input);
+                                frame = GetAnimationKeyFrameBool(input);
                             }
                             else
                             {
@@ -991,7 +1009,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                                 {
                                     uint frameOffset = input.ReadUInt32();
                                     data.Seek(frameOffset, SeekOrigin.Begin);
-                                    getAnimationKeyFrame(input, frame);
+                                    GetAnimationKeyFrame(input, frame);
                                 }
                             }
                         }
@@ -1012,12 +1030,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OCameraAnimation cameraAnimation = new RenderBase.OCameraAnimation();
-
-                cameraAnimation.name = readString(input);
+                RenderBase.OCameraAnimation cameraAnimation = new RenderBase.OCameraAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                cameraAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                cameraAnimation.frameSize = input.ReadSingle();
+                cameraAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                cameraAnimation.FrameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32();
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
@@ -1033,7 +1052,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OCameraAnimationData animationData = new RenderBase.OCameraAnimationData();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    animationData.name = readString(input);
+                    animationData.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
 
@@ -1079,7 +1098,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                getAnimationKeyFrame(input, frame);
+                                GetAnimationKeyFrame(input, frame);
                             }
                         }
 
@@ -1099,12 +1118,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OFogAnimation fogAnimation = new RenderBase.OFogAnimation();
-
-                fogAnimation.name = readString(input);
+                RenderBase.OFogAnimation fogAnimation = new RenderBase.OFogAnimation
+                {
+                    Name = ReadString(input)
+                };
                 uint animationFlags = input.ReadUInt32();
-                fogAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
-                fogAnimation.frameSize = input.ReadSingle();
+                fogAnimation.LoopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                fogAnimation.FrameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32();
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
@@ -1118,7 +1138,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     RenderBase.OFogAnimationData animationData = new RenderBase.OFogAnimationData();
 
                     data.Seek(offset, SeekOrigin.Begin);
-                    animationData.name = readString(input);
+                    animationData.name = ReadString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
 
@@ -1146,7 +1166,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                getAnimationKeyFrame(input, frame);
+                                GetAnimationKeyFrame(input, frame);
                             }
                         }
 
@@ -1166,8 +1186,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                RenderBase.OScene scene = new RenderBase.OScene();
-                scene.name = readString(input);
+                RenderBase.OScene scene = new RenderBase.OScene
+                {
+                    name = ReadString(input)
+                };
 
                 uint cameraReferenceOffset = input.ReadUInt32();
                 uint cameraReferenceEntries = input.ReadUInt32();
@@ -1179,27 +1201,33 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 data.Seek(cameraReferenceOffset, SeekOrigin.Begin);
                 for (int i = 0; i < cameraReferenceEntries; i++)
                 {
-                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
-                    reference.slotIndex = input.ReadUInt32();
-                    reference.name = readString(input);
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference
+                    {
+                        slotIndex = input.ReadUInt32(),
+                        name = ReadString(input)
+                    };
                     scene.cameras.Add(reference);
                 }
 
                 data.Seek(lightReferenceOffset, SeekOrigin.Begin);
                 for (int i = 0; i < lightReferenceEntries; i++)
                 {
-                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
-                    reference.slotIndex = input.ReadUInt32();
-                    reference.name = readString(input);
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference
+                    {
+                        slotIndex = input.ReadUInt32(),
+                        name = ReadString(input)
+                    };
                     scene.lights.Add(reference);
                 }
 
                 data.Seek(fogReferenceOffset, SeekOrigin.Begin);
                 for (int i = 0; i < fogReferenceEntries; i++)
                 {
-                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
-                    reference.slotIndex = input.ReadUInt32();
-                    reference.name = readString(input);
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference
+                    {
+                        slotIndex = input.ReadUInt32(),
+                        name = ReadString(input)
+                    };
                     scene.fogs.Add(reference);
                 }
             }
@@ -1214,26 +1242,28 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
                 //Objects header
                 data.Seek(objectsHeaderOffset, SeekOrigin.Begin);
-                bchModelHeader modelHeader;
+                BchModelHeader modelHeader;
                 modelHeader.flags = input.ReadByte();
                 modelHeader.skeletonScalingType = input.ReadByte();
                 modelHeader.silhouetteMaterialEntries = input.ReadUInt16();
 
-                modelHeader.worldTransform = new RenderBase.OMatrix();
-                modelHeader.worldTransform.M11 = input.ReadSingle();
-                modelHeader.worldTransform.M21 = input.ReadSingle();
-                modelHeader.worldTransform.M31 = input.ReadSingle();
-                modelHeader.worldTransform.M41 = input.ReadSingle();
+                modelHeader.worldTransform = new RenderBase.OMatrix
+                {
+                    M11 = input.ReadSingle(),
+                    M21 = input.ReadSingle(),
+                    M31 = input.ReadSingle(),
+                    M41 = input.ReadSingle(),
 
-                modelHeader.worldTransform.M12 = input.ReadSingle();
-                modelHeader.worldTransform.M22 = input.ReadSingle();
-                modelHeader.worldTransform.M32 = input.ReadSingle();
-                modelHeader.worldTransform.M42 = input.ReadSingle();
+                    M12 = input.ReadSingle(),
+                    M22 = input.ReadSingle(),
+                    M32 = input.ReadSingle(),
+                    M42 = input.ReadSingle(),
 
-                modelHeader.worldTransform.M13 = input.ReadSingle();
-                modelHeader.worldTransform.M23 = input.ReadSingle();
-                modelHeader.worldTransform.M33 = input.ReadSingle();
-                modelHeader.worldTransform.M43 = input.ReadSingle();
+                    M13 = input.ReadSingle(),
+                    M23 = input.ReadSingle(),
+                    M33 = input.ReadSingle(),
+                    M43 = input.ReadSingle()
+                };
 
                 modelHeader.materialsTableOffset = input.ReadUInt32();
                 modelHeader.materialsTableEntries = input.ReadUInt32();
@@ -1246,7 +1276,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 modelHeader.skeletonNameOffset = input.ReadUInt32();
                 modelHeader.objectsNodeVisibilityOffset = input.ReadUInt32();
                 modelHeader.objectsNodeCount = input.ReadUInt32();
-                modelHeader.modelName = readString(input);
+                modelHeader.modelName = ReadString(input);
                 modelHeader.objectsNodeNameEntries = input.ReadUInt32();
                 modelHeader.objectsNodeNameOffset = input.ReadUInt32();
                 input.ReadUInt32(); //0x0
@@ -1266,7 +1296,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     int referenceBit = input.ReadInt32();
                     ushort leftNode = input.ReadUInt16();
                     ushort rightNode = input.ReadUInt16();
-                    objectName[i] = readString(input);
+                    objectName[i] = ReadString(input);
                 }
 
                 //Materials
@@ -1297,10 +1327,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     else
                         materialMapperOffset = input.ReadUInt32();
 
-                    material.name0 = readString(input);
-                    material.name1 = readString(input);
-                    material.name2 = readString(input);
-                    material.name = readString(input);
+                    material.name0 = ReadString(input);
+                    material.name1 = ReadString(input);
+                    material.name2 = ReadString(input);
+                    material.name = ReadString(input);
 
                     //Parameters
                     //Same pointer of Materials section. Why?
@@ -1346,18 +1376,18 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         material.lightSetIndex = input.ReadUInt16();
                         material.fogIndex = input.ReadUInt16();
 
-                        material.materialColor.emission = MeshUtils.getColor(input);
-                        material.materialColor.ambient = MeshUtils.getColor(input);
-                        material.materialColor.diffuse = MeshUtils.getColor(input);
-                        material.materialColor.specular0 = MeshUtils.getColor(input);
-                        material.materialColor.specular1 = MeshUtils.getColor(input);
-                        material.materialColor.constant0 = MeshUtils.getColor(input);
-                        material.materialColor.constant1 = MeshUtils.getColor(input);
-                        material.materialColor.constant2 = MeshUtils.getColor(input);
-                        material.materialColor.constant3 = MeshUtils.getColor(input);
-                        material.materialColor.constant4 = MeshUtils.getColor(input);
-                        material.materialColor.constant5 = MeshUtils.getColor(input);
-                        material.fragmentOperation.blend.blendColor = MeshUtils.getColor(input);
+                        material.materialColor.emission = MeshUtils.GetColor(input);
+                        material.materialColor.ambient = MeshUtils.GetColor(input);
+                        material.materialColor.diffuse = MeshUtils.GetColor(input);
+                        material.materialColor.specular0 = MeshUtils.GetColor(input);
+                        material.materialColor.specular1 = MeshUtils.GetColor(input);
+                        material.materialColor.constant0 = MeshUtils.GetColor(input);
+                        material.materialColor.constant1 = MeshUtils.GetColor(input);
+                        material.materialColor.constant2 = MeshUtils.GetColor(input);
+                        material.materialColor.constant3 = MeshUtils.GetColor(input);
+                        material.materialColor.constant4 = MeshUtils.GetColor(input);
+                        material.materialColor.constant5 = MeshUtils.GetColor(input);
+                        material.fragmentOperation.blend.blendColor = MeshUtils.GetColor(input);
                         material.materialColor.colorScale = input.ReadSingle();
 
                         input.ReadUInt32(); //TODO: Figure out
@@ -1377,7 +1407,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         long position = data.Position;
                         PICACommandReader fshLightingCommands = new PICACommandReader(data, 6, true);
 
-                        PICACommand.fragmentSamplerAbsolute sAbs = fshLightingCommands.getReflectanceSamplerAbsolute();
+                        PICACommand.FragmentSamplerAbsolute sAbs = fshLightingCommands.GetReflectanceSamplerAbsolute();
                         material.fragmentShader.lighting.reflectanceRSampler.isAbsolute = sAbs.r;
                         material.fragmentShader.lighting.reflectanceGSampler.isAbsolute = sAbs.g;
                         material.fragmentShader.lighting.reflectanceBSampler.isAbsolute = sAbs.b;
@@ -1385,7 +1415,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         material.fragmentShader.lighting.distribution1Sampler.isAbsolute = sAbs.d1;
                         material.fragmentShader.lighting.fresnelSampler.isAbsolute = sAbs.fresnel;
 
-                        PICACommand.fragmentSamplerInput sInput = fshLightingCommands.getReflectanceSamplerInput();
+                        PICACommand.FragmentSamplerInput sInput = fshLightingCommands.GetReflectanceSamplerInput();
                         material.fragmentShader.lighting.reflectanceRSampler.input = sInput.r;
                         material.fragmentShader.lighting.reflectanceGSampler.input = sInput.g;
                         material.fragmentShader.lighting.reflectanceBSampler.input = sInput.b;
@@ -1393,7 +1423,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         material.fragmentShader.lighting.distribution1Sampler.input = sInput.d1;
                         material.fragmentShader.lighting.fresnelSampler.input = sInput.fresnel;
 
-                        PICACommand.fragmentSamplerScale sScale = fshLightingCommands.getReflectanceSamplerScale();
+                        PICACommand.FragmentSamplerScale sScale = fshLightingCommands.GetReflectanceSamplerScale();
                         material.fragmentShader.lighting.reflectanceRSampler.scale = sScale.r;
                         material.fragmentShader.lighting.reflectanceGSampler.scale = sScale.g;
                         material.fragmentShader.lighting.reflectanceBSampler.scale = sScale.b;
@@ -1410,22 +1440,22 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         uint fshCommandsWordCount = input.ReadUInt32();
                         input.ReadUInt32();
 
-                        material.fragmentShader.lighting.distribution0Sampler.tableName = readString(input);
-                        material.fragmentShader.lighting.distribution1Sampler.tableName = readString(input);
-                        material.fragmentShader.lighting.fresnelSampler.tableName = readString(input);
-                        material.fragmentShader.lighting.reflectanceRSampler.tableName = readString(input);
-                        material.fragmentShader.lighting.reflectanceGSampler.tableName = readString(input);
-                        material.fragmentShader.lighting.reflectanceBSampler.tableName = readString(input);
+                        material.fragmentShader.lighting.distribution0Sampler.tableName = ReadString(input);
+                        material.fragmentShader.lighting.distribution1Sampler.tableName = ReadString(input);
+                        material.fragmentShader.lighting.fresnelSampler.tableName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceRSampler.tableName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceGSampler.tableName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceBSampler.tableName = ReadString(input);
 
-                        material.fragmentShader.lighting.distribution0Sampler.samplerName = readString(input);
-                        material.fragmentShader.lighting.distribution1Sampler.samplerName = readString(input);
-                        material.fragmentShader.lighting.fresnelSampler.samplerName = readString(input);
-                        material.fragmentShader.lighting.reflectanceRSampler.samplerName = readString(input);
-                        material.fragmentShader.lighting.reflectanceGSampler.samplerName = readString(input);
-                        material.fragmentShader.lighting.reflectanceBSampler.samplerName = readString(input);
+                        material.fragmentShader.lighting.distribution0Sampler.samplerName = ReadString(input);
+                        material.fragmentShader.lighting.distribution1Sampler.samplerName = ReadString(input);
+                        material.fragmentShader.lighting.fresnelSampler.samplerName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceRSampler.samplerName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceGSampler.samplerName = ReadString(input);
+                        material.fragmentShader.lighting.reflectanceBSampler.samplerName = ReadString(input);
 
-                        material.shaderReference = new RenderBase.OReference(readString(input));
-                        material.modelReference = new RenderBase.OReference(readString(input));
+                        material.shaderReference = new RenderBase.OReference(ReadString(input));
+                        material.modelReference = new RenderBase.OReference(ReadString(input));
 
                         //User Data
                         if (header.backwardCompatibility > 6)
@@ -1434,7 +1464,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             if (metaDataPointerOffset != 0)
                             {
                                 data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
-                                material.userData = getMetaData(input);
+                                material.userData = GetMetaData(input);
                             }
                         }
 
@@ -1451,7 +1481,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             mapper.minFilter = (RenderBase.OTextureMinFilter)(levelOfDetailAndMinFilter & 0xff);
                             mapper.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
                             mapper.LODBias = input.ReadSingle();
-                            mapper.borderColor = MeshUtils.getColor(input);
+                            mapper.borderColor = MeshUtils.GetColor(input);
 
                             material.textureMapper[i] = mapper;
                         }
@@ -1459,14 +1489,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         //Fragment Shader commands
                         data.Seek(fshCommandsOffset, SeekOrigin.Begin);
                         PICACommandReader fshCommands = new PICACommandReader(data, fshCommandsWordCount);
-                        for (byte stage = 0; stage < 6; stage++) material.fragmentShader.textureCombiner[stage] = fshCommands.getTevStage(stage);
-                        material.fragmentShader.bufferColor = fshCommands.getFragmentBufferColor();
-                        material.fragmentOperation.blend = fshCommands.getBlendOperation();
-                        material.fragmentOperation.blend.logicalOperation = fshCommands.getColorLogicOperation();
-                        material.fragmentShader.alphaTest = fshCommands.getAlphaTest();
-                        material.fragmentOperation.stencil = fshCommands.getStencilTest();
-                        material.fragmentOperation.depth = fshCommands.getDepthTest();
-                        material.rasterization.cullMode = fshCommands.getCullMode();
+                        for (byte stage = 0; stage < 6; stage++) material.fragmentShader.textureCombiner[stage] = fshCommands.GetTevStage(stage);
+                        material.fragmentShader.bufferColor = fshCommands.GetFragmentBufferColor();
+                        material.fragmentOperation.blend = fshCommands.GetBlendOperation();
+                        material.fragmentOperation.blend.logicalOperation = fshCommands.GetColorLogicOperation();
+                        material.fragmentShader.alphaTest = fshCommands.GetAlphaTest();
+                        material.fragmentOperation.stencil = fshCommands.GetStencilTest();
+                        material.fragmentOperation.depth = fshCommands.GetDepthTest();
+                        material.rasterization.cullMode = fshCommands.GetCullMode();
                         material.fragmentOperation.blend.mode = blendMode;
                     }
 
@@ -1489,30 +1519,32 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     bone.translation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                     bone.absoluteScale = new RenderBase.OVector3(bone.scale);
 
-                    RenderBase.OMatrix boneMatrix = new RenderBase.OMatrix();
-                    boneMatrix.M11 = input.ReadSingle();
-                    boneMatrix.M21 = input.ReadSingle();
-                    boneMatrix.M31 = input.ReadSingle();
-                    boneMatrix.M41 = input.ReadSingle();
+                    RenderBase.OMatrix boneMatrix = new RenderBase.OMatrix
+                    {
+                        M11 = input.ReadSingle(),
+                        M21 = input.ReadSingle(),
+                        M31 = input.ReadSingle(),
+                        M41 = input.ReadSingle(),
 
-                    boneMatrix.M12 = input.ReadSingle();
-                    boneMatrix.M22 = input.ReadSingle();
-                    boneMatrix.M32 = input.ReadSingle();
-                    boneMatrix.M42 = input.ReadSingle();
+                        M12 = input.ReadSingle(),
+                        M22 = input.ReadSingle(),
+                        M32 = input.ReadSingle(),
+                        M42 = input.ReadSingle(),
 
-                    boneMatrix.M13 = input.ReadSingle();
-                    boneMatrix.M23 = input.ReadSingle();
-                    boneMatrix.M33 = input.ReadSingle();
-                    boneMatrix.M43 = input.ReadSingle();
+                        M13 = input.ReadSingle(),
+                        M23 = input.ReadSingle(),
+                        M33 = input.ReadSingle(),
+                        M43 = input.ReadSingle()
+                    };
 
-                    bone.name = readString(input);
+                    bone.name = ReadString(input);
 
                     uint metaDataPointerOffset = input.ReadUInt32();
                     if (metaDataPointerOffset != 0)
                     {
                         long position = data.Position;
                         data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
-                        bone.userData = getMetaData(input);
+                        bone.userData = GetMetaData(input);
                         data.Seek(position, SeekOrigin.Begin);
                     }
 
@@ -1523,7 +1555,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 for (int index = 0; index < modelHeader.skeletonEntries; index++)
                 {
                     RenderBase.OMatrix transform = new RenderBase.OMatrix();
-                    transformSkeleton(model.skeleton, index, ref transform);
+                    TransformSkeleton(model.skeleton, index, ref transform);
                     skeletonTransform.Add(transform);
                 }
 
@@ -1532,12 +1564,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
                 //Vertices header
                 data.Seek(modelHeader.verticesTableOffset, SeekOrigin.Begin);
-                List<bchObjectEntry> objects = new List<bchObjectEntry>();
+                List<BchObjectEntry> objects = new List<BchObjectEntry>();
 
                 for (int index = 0; index < modelHeader.verticesTableEntries; index++)
                 {
-                    bchObjectEntry objectEntry = new bchObjectEntry();
-                    objectEntry.materialId = input.ReadUInt16();
+                    BchObjectEntry objectEntry = new BchObjectEntry
+                    {
+                        materialId = input.ReadUInt16()
+                    };
                     ushort flags = input.ReadUInt16();
 
                     if (header.backwardCompatibility != 8) objectEntry.isSilhouette = (flags & 1) > 0;
@@ -1561,9 +1595,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 {
                     if (objects[objIndex].isSilhouette) continue; //TODO: Figure out for what "Silhouette" is used.
 
-                    RenderBase.OMesh obj = new RenderBase.OMesh();
-                    obj.materialId = objects[objIndex].materialId;
-                    obj.renderPriority = objects[objIndex].renderPriority;
+                    RenderBase.OMesh obj = new RenderBase.OMesh
+                    {
+                        materialId = objects[objIndex].materialId,
+                        renderPriority = objects[objIndex].renderPriority
+                    };
                     if (objects[objIndex].nodeId < objectName.Length) obj.name = objectName[objects[objIndex].nodeId]; else obj.name = "mesh" + objIndex.ToString();
                     obj.isVisible = (nodeVisibility & (1 << objects[objIndex].nodeId)) > 0;
 
@@ -1571,8 +1607,8 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     data.Seek(objects[objIndex].vshAttributesBufferCommandsOffset, SeekOrigin.Begin);
                     PICACommandReader vshCommands = new PICACommandReader(data, objects[objIndex].vshAttributesBufferCommandsWordCount);
 
-                    Stack<float> vshAttributesUniformReg6 = vshCommands.getVSHFloatUniformData(6);
-                    Stack<float> vshAttributesUniformReg7 = vshCommands.getVSHFloatUniformData(7);
+                    Stack<float> vshAttributesUniformReg6 = vshCommands.GetVSHFloatUniformData(6);
+                    Stack<float> vshAttributesUniformReg7 = vshCommands.GetVSHFloatUniformData(7);
                     RenderBase.OVector4 positionOffset = new RenderBase.OVector4(
                         vshAttributesUniformReg6.Pop(),
                         vshAttributesUniformReg6.Pop(),
@@ -1605,7 +1641,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         RenderBase.OSkinningMode skinningMode = RenderBase.OSkinningMode.none;
                         List<ushort> nodeList = new List<ushort>();
                         uint idxBufferOffset;
-                        PICACommand.indexBufferFormat idxBufferFormat;
+                        PICACommand.IndexBufferFormat idxBufferFormat;
                         uint idxBufferTotalVertices;
 
                         if (hasFaces)
@@ -1621,37 +1657,37 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             uint faceHeaderWordCount = input.ReadUInt32();
                             data.Seek(faceHeaderOffset, SeekOrigin.Begin);
                             PICACommandReader idxCommands = new PICACommandReader(data, faceHeaderWordCount);
-                            idxBufferOffset = idxCommands.getIndexBufferAddress();
-                            idxBufferFormat = idxCommands.getIndexBufferFormat();
-                            idxBufferTotalVertices = idxCommands.getIndexBufferTotalVertices();
+                            idxBufferOffset = idxCommands.GetIndexBufferAddress();
+                            idxBufferFormat = idxCommands.GetIndexBufferFormat();
+                            idxBufferTotalVertices = idxCommands.GetIndexBufferTotalVertices();
                         }
                         else
                         {
                             data.Seek(facesTableOffset + f * 8, SeekOrigin.Begin);
                             
                             idxBufferOffset = input.ReadUInt32();
-                            idxBufferFormat = PICACommand.indexBufferFormat.unsignedShort;
+                            idxBufferFormat = PICACommand.IndexBufferFormat.unsignedShort;
                             idxBufferTotalVertices = input.ReadUInt32();
                         }
 
                         //Carregamento de dados relacionados ao Vertex Shader
-                        uint vshAttributesBufferOffset = vshCommands.getVSHAttributesBufferAddress(0);
-                        uint vshAttributesBufferStride = vshCommands.getVSHAttributesBufferStride(0);
-                        uint vshTotalAttributes = vshCommands.getVSHTotalAttributes(0);
-                        PICACommand.vshAttribute[] vshMainAttributesBufferPermutation = vshCommands.getVSHAttributesBufferPermutation();
-                        uint[] vshAttributesBufferPermutation = vshCommands.getVSHAttributesBufferPermutation(0);
-                        PICACommand.attributeFormat[] vshAttributesBufferFormat = vshCommands.getVSHAttributesBufferFormat();
+                        uint vshAttributesBufferOffset = vshCommands.GetVSHAttributesBufferAddress(0);
+                        uint vshAttributesBufferStride = vshCommands.GetVSHAttributesBufferStride(0);
+                        uint vshTotalAttributes = vshCommands.GetVSHTotalAttributes(0);
+                        PICACommand.VshAttribute[] vshMainAttributesBufferPermutation = vshCommands.GetVSHAttributesBufferPermutation();
+                        uint[] vshAttributesBufferPermutation = vshCommands.GetVSHAttributesBufferPermutation(0);
+                        PICACommand.AttributeFormat[] vshAttributesBufferFormat = vshCommands.GetVSHAttributesBufferFormat();
 
                         for (int attribute = 0; attribute < vshTotalAttributes; attribute++)
                         {
                             switch (vshMainAttributesBufferPermutation[vshAttributesBufferPermutation[attribute]])
                             {
-                                case PICACommand.vshAttribute.normal: obj.hasNormal = true; break;
-                                case PICACommand.vshAttribute.tangent: obj.hasTangent = true; break;
-                                case PICACommand.vshAttribute.color: obj.hasColor = true; break;
-                                case PICACommand.vshAttribute.textureCoordinate0: obj.texUVCount = Math.Max(obj.texUVCount, 1); break;
-                                case PICACommand.vshAttribute.textureCoordinate1: obj.texUVCount = Math.Max(obj.texUVCount, 2); break;
-                                case PICACommand.vshAttribute.textureCoordinate2: obj.texUVCount = Math.Max(obj.texUVCount, 3); break;
+                                case PICACommand.VshAttribute.normal: obj.hasNormal = true; break;
+                                case PICACommand.VshAttribute.tangent: obj.hasTangent = true; break;
+                                case PICACommand.VshAttribute.color: obj.hasColor = true; break;
+                                case PICACommand.VshAttribute.textureCoordinate0: obj.texUVCount = Math.Max(obj.texUVCount, 1); break;
+                                case PICACommand.VshAttribute.textureCoordinate1: obj.texUVCount = Math.Max(obj.texUVCount, 2); break;
+                                case PICACommand.VshAttribute.textureCoordinate2: obj.texUVCount = Math.Max(obj.texUVCount, 3); break;
                             }
                         }
 
@@ -1668,55 +1704,57 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
                             switch (idxBufferFormat)
                             {
-                                case PICACommand.indexBufferFormat.unsignedShort: index = input.ReadUInt16(); break;
-                                case PICACommand.indexBufferFormat.unsignedByte: index = input.ReadByte(); break;
+                                case PICACommand.IndexBufferFormat.unsignedShort: index = input.ReadUInt16(); break;
+                                case PICACommand.IndexBufferFormat.unsignedByte: index = input.ReadByte(); break;
                             }
 
                             long dataPosition = data.Position;
                             long vertexOffset = vshAttributesBufferOffset + (index * vshAttributesBufferStride);
                             data.Seek(vertexOffset, SeekOrigin.Begin);
 
-                            RenderBase.OVertex vertex = new RenderBase.OVertex();
-                            vertex.diffuseColor = 0xffffffff;
+                            RenderBase.OVertex vertex = new RenderBase.OVertex
+                            {
+                                diffuseColor = 0xffffffff
+                            };
                             for (int attribute = 0; attribute < vshTotalAttributes; attribute++)
                             {
                                 //gdkchan self note: The Attribute type flags are used for something else on Bone Weight (and bone index?)
-                                PICACommand.vshAttribute att = vshMainAttributesBufferPermutation[vshAttributesBufferPermutation[attribute]];
-                                PICACommand.attributeFormat format = vshAttributesBufferFormat[vshAttributesBufferPermutation[attribute]];
-                                if (att == PICACommand.vshAttribute.boneWeight) format.type = PICACommand.attributeFormatType.unsignedByte;
-                                RenderBase.OVector4 vector = getVector(input, format);
+                                PICACommand.VshAttribute att = vshMainAttributesBufferPermutation[vshAttributesBufferPermutation[attribute]];
+                                PICACommand.AttributeFormat format = vshAttributesBufferFormat[vshAttributesBufferPermutation[attribute]];
+                                if (att == PICACommand.VshAttribute.boneWeight) format.type = PICACommand.AttributeFormatType.unsignedByte;
+                                RenderBase.OVector4 vector = GetVector(input, format);
 
                                 switch (att)
                                 {
-                                    case PICACommand.vshAttribute.position:
+                                    case PICACommand.VshAttribute.position:
                                         float x = (vector.x * positionScale) + positionOffset.x;
                                         float y = (vector.y * positionScale) + positionOffset.y;
                                         float z = (vector.z * positionScale) + positionOffset.z;
                                         vertex.position = new RenderBase.OVector3(x, y, z);
                                         break;
-                                    case PICACommand.vshAttribute.normal:
+                                    case PICACommand.VshAttribute.normal:
                                         vertex.normal = new RenderBase.OVector3(vector.x * normalScale, vector.y * normalScale, vector.z * normalScale);
                                         break;
-                                    case PICACommand.vshAttribute.tangent:
+                                    case PICACommand.VshAttribute.tangent:
                                         vertex.tangent = new RenderBase.OVector3(vector.x * tangentScale, vector.y * tangentScale, vector.z * tangentScale);
                                         break;
-                                    case PICACommand.vshAttribute.color:
-                                        uint r = MeshUtils.saturate((vector.x * colorScale) * 0xff);
-                                        uint g = MeshUtils.saturate((vector.y * colorScale) * 0xff);
-                                        uint b = MeshUtils.saturate((vector.z * colorScale) * 0xff);
-                                        uint a = MeshUtils.saturate((vector.w * colorScale) * 0xff);
+                                    case PICACommand.VshAttribute.color:
+                                        uint r = MeshUtils.Saturate((vector.x * colorScale) * 0xff);
+                                        uint g = MeshUtils.Saturate((vector.y * colorScale) * 0xff);
+                                        uint b = MeshUtils.Saturate((vector.z * colorScale) * 0xff);
+                                        uint a = MeshUtils.Saturate((vector.w * colorScale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
-                                    case PICACommand.vshAttribute.textureCoordinate0:
+                                    case PICACommand.VshAttribute.textureCoordinate0:
                                         vertex.texture0 = new RenderBase.OVector2(vector.x * texture0Scale, vector.y * texture0Scale);
                                         break;
-                                    case PICACommand.vshAttribute.textureCoordinate1:
+                                    case PICACommand.VshAttribute.textureCoordinate1:
                                         vertex.texture1 = new RenderBase.OVector2(vector.x * texture1Scale, vector.y * texture1Scale);
                                         break;
-                                    case PICACommand.vshAttribute.textureCoordinate2:
+                                    case PICACommand.VshAttribute.textureCoordinate2:
                                         vertex.texture2 = new RenderBase.OVector2(vector.x * texture2Scale, vector.y * texture2Scale);
                                         break;
-                                    case PICACommand.vshAttribute.boneIndex:
+                                    case PICACommand.VshAttribute.boneIndex:
                                         vertex.node.Add(nodeList[(int)vector.x]);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
@@ -1725,7 +1763,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                                             if (format.attributeLength > 2) vertex.node.Add(nodeList[(int)vector.w]);
                                         }
                                         break;
-                                    case PICACommand.vshAttribute.boneWeight:
+                                    case PICACommand.VshAttribute.boneWeight:
                                         vertex.weight.Add(vector.x * boneWeightScale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
@@ -1750,10 +1788,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
                                 if (vertex.weight.Count == 0) vertex.weight.Add(1);
-                                vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
+                                vertex.position = RenderBase.OVector3.Transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
-                            MeshUtils.calculateBounds(model, vertex);
+                            MeshUtils.CalculateBounds(model, vertex);
                             obj.vertices.Add(vertex);
 
                             data.Seek(dataPosition, SeekOrigin.Begin);
@@ -1772,9 +1810,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         {
                             data.Seek(bBoxDataOffset + (index * 0xc), SeekOrigin.Begin);
 
-                            RenderBase.OOrientedBoundingBox bBox = new RenderBase.OOrientedBoundingBox();
-
-                            bBox.name = readString(input);
+                            RenderBase.OOrientedBoundingBox bBox = new RenderBase.OOrientedBoundingBox
+                            {
+                                name = ReadString(input)
+                            };
                             uint flags = input.ReadUInt32();
                             uint dataOffset = input.ReadUInt32();
 
@@ -1805,12 +1844,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 if (modelHeader.metaDataPointerOffset != 0)
                 {
                     data.Seek(modelHeader.metaDataPointerOffset, SeekOrigin.Begin);
-                    model.userData = getMetaData(input);
+                    model.userData = GetMetaData(input);
                 }
 
                 for (int index = 0; index < modelHeader.skeletonEntries; index++)
                 {
-                    scaleSkeleton(model.skeleton, index, index);
+                    ScaleSkeleton(model.skeleton, index, index);
                 }
 
                 models.model.Add(model);
@@ -1826,7 +1865,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">The BinaryReader of the stream</param>
         /// <returns></returns>
-        private static uint peek(BinaryReader input)
+        private static uint Peek(BinaryReader input)
         {
             uint value = input.ReadUInt32();
             input.BaseStream.Seek(-4, SeekOrigin.Current);
@@ -1839,7 +1878,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="skeleton">The complete skeleton</param>
         /// <param name="index">Index of the child bone</param>
         /// <param name="scale">Index of the parent bone</param>
-        private static void scaleSkeleton(List<RenderBase.OBone> skeleton, int index, int parentIndex)
+        private static void ScaleSkeleton(List<RenderBase.OBone> skeleton, int index, int parentIndex)
         {
             if (index != parentIndex)
             {
@@ -1852,7 +1891,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 skeleton[parentIndex].translation.z *= skeleton[index].scale.z;
             }
 
-            if (skeleton[index].parentId > -1) scaleSkeleton(skeleton, skeleton[index].parentId, parentIndex);
+            if (skeleton[index].parentId > -1) ScaleSkeleton(skeleton, skeleton[index].parentId, parentIndex);
         }
 
         /// <summary>
@@ -1861,14 +1900,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="skeleton">The skeleton</param>
         /// <param name="index">Index of the bone to convert</param>
         /// <param name="target">Target matrix to save bone transformation</param>
-        private static void transformSkeleton(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OMatrix target)
+        private static void TransformSkeleton(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OMatrix target)
         {
-            target *= RenderBase.OMatrix.scale(skeleton[index].scale);
-            target *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
-            target *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
-            target *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
-            target *= RenderBase.OMatrix.translate(skeleton[index].translation);
-            if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
+            target *= RenderBase.OMatrix.Scale(skeleton[index].scale);
+            target *= RenderBase.OMatrix.RotateX(skeleton[index].rotation.x);
+            target *= RenderBase.OMatrix.RotateY(skeleton[index].rotation.y);
+            target *= RenderBase.OMatrix.RotateZ(skeleton[index].rotation.z);
+            target *= RenderBase.OMatrix.Translate(skeleton[index].translation);
+            if (skeleton[index].parentId > -1) TransformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         /// <summary>
@@ -1879,31 +1918,31 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="quantization">Quantization used on the vector (ubyte, byte, short or float)</param>
         /// <param name="type">Size of the vector (vector1, 2, 3 or 4)</param>
         /// <returns></returns>
-        private static RenderBase.OVector4 getVector(BinaryReader input, PICACommand.attributeFormat format)
+        private static RenderBase.OVector4 GetVector(BinaryReader input, PICACommand.AttributeFormat format)
         {
             RenderBase.OVector4 output = new RenderBase.OVector4();
 
             switch (format.type)
             {
-                case PICACommand.attributeFormatType.signedByte:
+                case PICACommand.AttributeFormatType.signedByte:
                     output.x = (sbyte)input.ReadByte();
                     if (format.attributeLength > 0) output.y = (sbyte)input.ReadByte();
                     if (format.attributeLength > 1) output.z = (sbyte)input.ReadByte();
                     if (format.attributeLength > 2) output.w = (sbyte)input.ReadByte();
                     break;
-                case PICACommand.attributeFormatType.unsignedByte:
+                case PICACommand.AttributeFormatType.unsignedByte:
                     output.x = input.ReadByte();
                     if (format.attributeLength > 0) output.y = input.ReadByte();
                     if (format.attributeLength > 1) output.z = input.ReadByte();
                     if (format.attributeLength > 2) output.w = input.ReadByte();
                     break;
-                case PICACommand.attributeFormatType.signedShort:
+                case PICACommand.AttributeFormatType.signedShort:
                     output.x = input.ReadInt16();
                     if (format.attributeLength > 0) output.y = input.ReadInt16();
                     if (format.attributeLength > 1) output.z = input.ReadInt16();
                     if (format.attributeLength > 2) output.w = input.ReadInt16();
                     break;
-                case PICACommand.attributeFormatType.single:
+                case PICACommand.AttributeFormatType.single:
                     output.x = input.ReadSingle();
                     if (format.attributeLength > 0) output.y = input.ReadSingle();
                     if (format.attributeLength > 1) output.z = input.ReadSingle();
@@ -1920,10 +1959,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">BCH reader</param>
         /// <returns></returns>
-        private static string readString(BinaryReader input)
+        private static string ReadString(BinaryReader input)
         {
             uint offset = input.ReadUInt32();
-            if (offset != 0) return IOUtils.readString(input, offset);
+            if (offset != 0) return IOUtils.ReadString(input, offset);
             return null;
         }
 
@@ -1934,7 +1973,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="input">The BCH file Reader</param>
         /// <param name="header">The BCH file header</param>
         /// <returns></returns>
-        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrameGroup frame)
+        private static void GetAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrameGroup frame)
         {
             frame.startFrame = input.ReadSingle();
             frame.endFrame = input.ReadSingle();
@@ -1979,8 +2018,8 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         byte slope0 = input.ReadByte();
                         byte slope1 = input.ReadByte();
                         byte slope2 = input.ReadByte();
-                        keyFrame.inSlope = IOUtils.signExtend(slope0 | ((slope1 & 0xf) << 8), 12) / 32f;
-                        keyFrame.outSlope = IOUtils.signExtend((slope1 >> 4) | (slope2 << 4), 12) / 32f;
+                        keyFrame.inSlope = IOUtils.SignExtend(slope0 | ((slope1 & 0xf) << 8), 12) / 32f;
+                        keyFrame.outSlope = IOUtils.SignExtend((slope1 >> 4) | (slope2 << 4), 12) / 32f;
                         break;
                     case RenderBase.OSegmentQuantization.unifiedHermite96:
                         keyFrame.frame = input.ReadSingle();
@@ -1998,7 +2037,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         keyFrame.frame = input.ReadByte();
                         ushort uH32Value = input.ReadUInt16();
                         keyFrame.value = uH32Value & 0xfff;
-                        keyFrame.inSlope = IOUtils.signExtend((uH32Value >> 12) | (input.ReadByte() << 4), 12) / 32f;
+                        keyFrame.inSlope = IOUtils.SignExtend((uH32Value >> 12) | (input.ReadByte() << 4), 12) / 32f;
                         keyFrame.outSlope = keyFrame.inSlope;
                         break;
                     case RenderBase.OSegmentQuantization.stepLinear64:
@@ -2027,14 +2066,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="input">The BCH file Reader</param>
         /// <param name="header">The BCH file header</param>
         /// <returns></returns>
-        private static RenderBase.OAnimationKeyFrameGroup getAnimationKeyFrameBool(BinaryReader input)
+        private static RenderBase.OAnimationKeyFrameGroup GetAnimationKeyFrameBool(BinaryReader input)
         {
-            RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
+            RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup
+            {
+                exists = true,
+                startFrame = 0,
 
-            frame.exists = true;
-            frame.startFrame = 0;
-
-            frame.defaultValue = ((input.ReadUInt32() >> 24) & 1) > 0;
+                defaultValue = ((input.ReadUInt32() >> 24) & 1) > 0
+            };
             input.ReadUInt32();
             uint offset = input.ReadUInt32();
             uint entries = input.ReadUInt32();
@@ -2061,7 +2101,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">The BinaryReader of the Stream</param>
         /// <returns></returns>
-        private static List<RenderBase.OMetaData> getMetaData(BinaryReader input)
+        private static List<RenderBase.OMetaData> GetMetaData(BinaryReader input)
         {
             List<RenderBase.OMetaData> output = new List<RenderBase.OMetaData>();
 
@@ -2073,9 +2113,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             {
                 input.BaseStream.Seek(metaDataOffset + (index * 0xc), SeekOrigin.Begin);
 
-                RenderBase.OMetaData metaData = new RenderBase.OMetaData();
-
-                metaData.name = readString(input);
+                RenderBase.OMetaData metaData = new RenderBase.OMetaData
+                {
+                    name = ReadString(input)
+                };
                 if (metaData.name.StartsWith("$")) metaData.name = metaData.name.Substring(1);
                 metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
                 ushort entries = input.ReadUInt16();

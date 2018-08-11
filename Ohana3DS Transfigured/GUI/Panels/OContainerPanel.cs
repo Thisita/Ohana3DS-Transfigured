@@ -14,7 +14,7 @@ namespace Ohana3DS_Transfigured.GUI
             InitializeComponent();
         }
 
-        public void finalize()
+        public void Clear()
         {
             if (container.data != null)
             {
@@ -23,18 +23,18 @@ namespace Ohana3DS_Transfigured.GUI
             }
         }
 
-        public void launch(object data)
+        public void Launch(object data)
         {
             container = (OContainer)data;
-            FileList.addColumn(new OList.columnHeader(384, "Name"));
-            FileList.addColumn(new OList.columnHeader(128, "Size"));
-            foreach (OContainer.fileEntry file in container.content)
+            FileList.AddColumn(new OList.ColumnHeader(384, "Name"));
+            FileList.AddColumn(new OList.ColumnHeader(128, "Size"));
+            foreach (OContainer.FileEntry file in container.content)
             {
-                OList.listItemGroup item = new OList.listItemGroup();
-                item.columns.Add(new OList.listItem(file.name));
+                OList.ListItemGroup item = new OList.ListItemGroup();
+                item.columns.Add(new OList.ListItem(file.name));
                 uint length = file.loadFromDisk ? file.fileLength : (uint)file.data.Length;
-                item.columns.Add(new OList.listItem(getLength(length)));
-                FileList.addItem(item);
+                item.columns.Add(new OList.ListItem(GetLength(length)));
+                FileList.AddItem(item);
             }
             FileList.Refresh();
         }
@@ -46,7 +46,7 @@ namespace Ohana3DS_Transfigured.GUI
                 browserDlg.Description = "Export all files";
                 if (browserDlg.ShowDialog() == DialogResult.OK)
                 {
-                    foreach (OContainer.fileEntry file in container.content)
+                    foreach (OContainer.FileEntry file in container.content)
                     {
                         string fileName = Path.Combine(browserDlg.SelectedPath, file.name);
                         string dir = Path.GetDirectoryName(fileName);
@@ -75,7 +75,7 @@ namespace Ohana3DS_Transfigured.GUI
                 saveDlg.Filter = "All files|*.*";
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                 {
-                    OContainer.fileEntry file = container.content[FileList.SelectedIndex];
+                    OContainer.FileEntry file = container.content[FileList.SelectedIndex];
 
                     if (file.loadFromDisk)
                     {
@@ -91,7 +91,7 @@ namespace Ohana3DS_Transfigured.GUI
         }
 
         string[] lengthUnits = { "Bytes", "KB", "MB", "GB", "TB" };
-        private string getLength(uint length)
+        private string GetLength(uint length)
         {
             int i = 0;
             while (length > 0x400)

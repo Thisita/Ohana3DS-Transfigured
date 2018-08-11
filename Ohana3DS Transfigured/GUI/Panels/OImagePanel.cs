@@ -14,12 +14,12 @@ namespace Ohana3DS_Transfigured.GUI
             InitializeComponent();
         }
 
-        public void finalize()
+        public void Clear()
         {
             //Nothing to dispose here
         }
 
-        public void launch(object data)
+        public void Launch(object data)
         {
             RenderBase.OTexture texture = (RenderBase.OTexture)data;
             name = texture.name;

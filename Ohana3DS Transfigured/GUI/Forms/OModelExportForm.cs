@@ -45,17 +45,17 @@ namespace Ohana3DS_Transfigured.GUI.Forms
         {
             switch (e.KeyCode)
             {
-                case Keys.Enter: ok(); break;
+                case Keys.Enter: Ok(); break;
                 case Keys.Escape: Close(); break;
             }
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
         {
-            ok();
+            Ok();
         }
 
-        private void ok()
+        private void Ok()
         {
             if (!Directory.Exists(TxtOutFolder.Text))
             {
@@ -86,10 +86,10 @@ namespace Ohana3DS_Transfigured.GUI.Forms
 
                     switch (format)
                     {
-                        case 0: DAE.export(mdls, fileName + ".dae", i); break;
-                        case 1: SMD.export(mdls, fileName + ".smd", i); break;
-                        case 2: OBJ.export(mdls, fileName + ".obj", i); break;
-                        case 3: CMDL.export(mdls, fileName + ".cmdl", i); break;
+                        case 0: DAE.Export(mdls, fileName + ".dae", i); break;
+                        case 1: SMD.Export(mdls, fileName + ".smd", i); break;
+                        case 2: OBJ.Export(mdls, fileName + ".obj", i); break;
+                        case 3: CMDL.Export(mdls, fileName + ".cmdl", i); break;
                     }
                 }
             }
@@ -99,20 +99,20 @@ namespace Ohana3DS_Transfigured.GUI.Forms
 
                 switch (format)
                 {
-                    case 0: DAE.export(mdls, fileName + ".dae", mdlIndex); break;
+                    case 0: DAE.Export(mdls, fileName + ".dae", mdlIndex); break;
                     case 1:
-                        SMD.export(mdls, fileName + ".smd", mdlIndex);
+                        SMD.Export(mdls, fileName + ".smd", mdlIndex);
                         if (ChkExportAllAnimations.Checked)
                         {
                             for (int i = 0; i < mdls.skeletalAnimation.list.Count; i++)
                             {
-                                string name = mdls.skeletalAnimation.list[i].name + ".smd";
-                                SMD.export(mdls, Path.Combine(TxtOutFolder.Text, name), mdlIndex, i);
+                                string name = mdls.skeletalAnimation.list[i].Name + ".smd";
+                                SMD.Export(mdls, Path.Combine(TxtOutFolder.Text, name), mdlIndex, i);
                             }
                         }
                         break;
-                    case 2: OBJ.export(mdls, fileName + ".obj", mdlIndex); break;
-                    case 3: CMDL.export(mdls, fileName + ".cmdl", mdlIndex); break;
+                    case 2: OBJ.Export(mdls, fileName + ".obj", mdlIndex); break;
+                    case 3: CMDL.Export(mdls, fileName + ".cmdl", mdlIndex); break;
                 }
             }
 

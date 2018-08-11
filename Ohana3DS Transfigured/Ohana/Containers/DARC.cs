@@ -4,7 +4,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
 {
     class DARC
     {
-        private struct fileEntry
+        private struct FileEntry
         {
             public uint nameOffset;
             public byte flags;
@@ -17,9 +17,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns>The container data</returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -27,12 +27,12 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream of the data</param>
         /// <returns>The container data</returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             OContainer output = new OContainer();
             BinaryReader input = new BinaryReader(data);
 
-            string darcMagic = IOUtils.readStringWithLength(input, 4);
+            string darcMagic = IOUtils.ReadStringWithLength(input, 4);
             ushort endian = input.ReadUInt16();
             ushort headerLength = input.ReadUInt16();
             uint version = input.ReadUInt32();
@@ -42,7 +42,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             uint dataOffset = input.ReadUInt32();
 
             data.Seek(tableOffset, SeekOrigin.Begin);
-            fileEntry root = getEntry(input);
+            FileEntry root = GetEntry(input);
             int baseOffset = (int)data.Position;
             int namesOffset = (int)(tableOffset + root.length * 0xc);
 
@@ -51,7 +51,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             {
                 data.Seek(baseOffset + i * 0xc, SeekOrigin.Begin);
 
-                fileEntry entry = getEntry(input);
+                FileEntry entry = GetEntry(input);
 
                 if ((entry.flags & 1) > 0)
                 {
@@ -61,10 +61,10 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                     for (;;)
                     {
                         uint parentIndex = entry.offset;
-                        currDir = getName(input, entry.nameOffset + namesOffset) + "/" + currDir;
+                        currDir = GetName(input, entry.nameOffset + namesOffset) + "/" + currDir;
                         if (parentIndex == 0 || parentIndex == index) break;
                         data.Seek(baseOffset + parentIndex * 0xc, SeekOrigin.Begin);
-                        entry = getEntry(input);
+                        entry = GetEntry(input);
                         index = (int)parentIndex;
                     }
 
@@ -75,9 +75,11 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                 byte[] buffer = new byte[entry.length];
                 data.Read(buffer, 0, buffer.Length);
 
-                OContainer.fileEntry file = new OContainer.fileEntry();
-                file.name = currDir + getName(input, entry.nameOffset + namesOffset);
-                file.data = buffer;
+                OContainer.FileEntry file = new OContainer.FileEntry
+                {
+                    name = currDir + GetName(input, entry.nameOffset + namesOffset),
+                    data = buffer
+                };
 
                 output.content.Add(file);
             }
@@ -86,10 +88,10 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             return output;
         }
         
-        private static fileEntry getEntry(BinaryReader input)
+        private static FileEntry GetEntry(BinaryReader input)
         {
             uint flags = input.ReadUInt32();
-            return new fileEntry
+            return new FileEntry
             {
                 nameOffset = flags & 0xffffff,
                 flags = (byte)(flags >> 24),
@@ -98,7 +100,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             };
         }
 
-        private static string getName(BinaryReader input, long offset)
+        private static string GetName(BinaryReader input, long offset)
         {
             input.BaseStream.Seek(offset, SeekOrigin.Begin);
             string name = null;

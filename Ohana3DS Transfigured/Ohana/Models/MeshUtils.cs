@@ -11,7 +11,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="mdl">The target model</param>
         /// <param name="vertex">The current mesh vertex</param>
-        public static void calculateBounds(RenderBase.OModel mdl, RenderBase.OVertex vertex)
+        public static void CalculateBounds(RenderBase.OModel mdl, RenderBase.OVertex vertex)
         {
             if (vertex.position.x < mdl.minVector.x) mdl.minVector.x = vertex.position.x;
             if (vertex.position.x > mdl.maxVector.x) mdl.maxVector.x = vertex.position.x;
@@ -26,7 +26,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">CGFX reader</param>
         /// <returns></returns>
-        public static Color getColor(BinaryReader input)
+        public static Color GetColor(BinaryReader input)
         {
             byte r = input.ReadByte();
             byte g = input.ReadByte();
@@ -41,7 +41,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">CGFX reader</param>
         /// <returns></returns>
-        public static Color getColorFloat(BinaryReader input)
+        public static Color GetColorFloat(BinaryReader input)
         {
             byte r = (byte)(input.ReadSingle() * 0xff);
             byte g = (byte)(input.ReadSingle() * 0xff);
@@ -56,7 +56,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="value">The float value</param>
         /// <returns></returns>
-        public static byte saturate(float value)
+        public static byte Saturate(float value)
         {
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;
@@ -65,7 +65,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
         const uint optimizerLookBack = 32;
 
-        public class optimizedMesh
+        public class OptimizedMesh
         {
             public List<RenderBase.OVertex> vertices = new List<RenderBase.OVertex>();
             public List<uint> indices = new List<uint>();
@@ -83,16 +83,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="mesh">The Mesh that should be optimized</param>
         /// <returns></returns>
-        public static optimizedMesh optimizeMesh(RenderBase.OMesh mesh)
+        public static OptimizedMesh OptimizeMesh(RenderBase.OMesh mesh)
         {
-            optimizedMesh output = new optimizedMesh();
-
-            output.hasNormal = mesh.hasNormal;
-            output.hasTangent = mesh.hasTangent;
-            output.hasColor = mesh.hasColor;
-            output.hasNode = mesh.hasNode;
-            output.hasWeight = mesh.hasWeight;
-            output.texUVCount = mesh.texUVCount;
+            OptimizedMesh output = new OptimizedMesh
+            {
+                hasNormal = mesh.hasNormal,
+                hasTangent = mesh.hasTangent,
+                hasColor = mesh.hasColor,
+                hasNode = mesh.hasNode,
+                hasWeight = mesh.hasWeight,
+                texUVCount = mesh.texUVCount
+            };
 
             for (int i = 0; i < mesh.vertices.Count; i++)
             {

@@ -15,7 +15,7 @@ namespace Ohana3DS_Transfigured
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             FrmMain form = new FrmMain();
-            if (args.Length > 0 && File.Exists(args[0])) form.setFileToOpen(args[0]);
+            if (args.Length > 0 && File.Exists(args[0])) form.SetFileToOpen(args[0]);
             Application.Run(form);
         }
     }

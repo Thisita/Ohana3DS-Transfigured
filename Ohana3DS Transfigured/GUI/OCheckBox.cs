@@ -99,8 +99,8 @@ namespace Ohana3DS_Transfigured.GUI
             if (_checked) e.Graphics.DrawImage(Resources.ui_icon_tick, checkRect);
 
             //Draw text at the right of the box
-            string text = autoSize ? Text : DrawingUtils.clampText(e.Graphics, Text, Font, Width);
-            SizeF textSize = DrawingUtils.measureText(e.Graphics, text, Font);
+            string text = autoSize ? Text : DrawingUtils.ClampText(e.Graphics, Text, Font, Width);
+            SizeF textSize = DrawingUtils.MeasureText(e.Graphics, text, Font);
             if (autoSize) Size = new Size((int)textSize.Width + checkRect.Width, (int)textSize.Height);
             Point textLocation = new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2));
             e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), textLocation);
@@ -117,7 +117,7 @@ namespace Ohana3DS_Transfigured.GUI
                 if (ClientRectangle.Contains(e.Location))
                 {
                     _checked = !_checked;
-                    if (CheckedChanged != null) CheckedChanged(this, EventArgs.Empty);
+                    CheckedChanged?.Invoke(this, EventArgs.Empty);
                     Refresh();
                 }
             }

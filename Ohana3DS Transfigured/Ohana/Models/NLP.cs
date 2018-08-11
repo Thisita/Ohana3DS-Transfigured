@@ -12,9 +12,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="fileName">File Name of the XML Model file</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
-            return Model.load(fileName);
+            return Model.Load(fileName);
         }
 
         /// <summary>
@@ -23,11 +23,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="data">Stream of the Mesh</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup loadMesh(Stream data)
+        public static RenderBase.OModelGroup LoadMesh(Stream data)
         {
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
             RenderBase.OModel model = new RenderBase.OModel();
-            Mesh.load(data, model, true);
+            Mesh.Load(data, model, true);
             model.name = "model";
 
             model.material.Add(new RenderBase.OMaterial());
@@ -40,9 +40,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="data">XML Stream of the Texture</param>
         /// <returns></returns>
-        public static RenderBase.OTexture loadTexture(string fileName)
+        public static RenderBase.OTexture LoadTexture(string fileName)
         {
-            return Model.loadTexture(fileName);
+            return Model.LoadTexture(fileName);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OAnimationKeyFrame getLeftFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame GetLeftFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
             RenderBase.OAnimationKeyFrame value = keyFrames[0];
@@ -28,7 +28,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OAnimationKeyFrame getRightFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame GetRightFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
             RenderBase.OAnimationKeyFrame value = keyFrames[keyFrames.Count - 1];
@@ -47,9 +47,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be returned</param>
         /// <returns>The closest smaller frame value</returns>
-        public static float interpolateStep(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static float InterpolateStep(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            return getLeftFrame(keyFrames, frame).value;
+            return GetLeftFrame(keyFrames, frame).value;
         }
 
         /// <summary>
@@ -58,10 +58,10 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolateLinear(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static float InterpolateLinear(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OAnimationKeyFrame a = getLeftFrame(keyFrames, frame);
-            RenderBase.OAnimationKeyFrame b = getRightFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = GetLeftFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = GetRightFrame(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float mu = (frame - a.frame) / (b.frame - a.frame);
@@ -75,13 +75,14 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="b">Second vector</param>
         /// <param name="mu">Value between 0-1 of the interpolation amount</param>
         /// <returns></returns>
-        public static RenderBase.OVector3 interpolateLinear(RenderBase.OVector3 a, RenderBase.OVector3 b, float mu)
+        public static RenderBase.OVector3 InterpolateLinear(RenderBase.OVector3 a, RenderBase.OVector3 b, float mu)
         {
-            RenderBase.OVector3 output = new RenderBase.OVector3();
-
-            output.x = interpolateLinear(a.x, b.x, mu);
-            output.y = interpolateLinear(a.y, b.y, mu);
-            output.z = interpolateLinear(a.z, b.z, mu);
+            RenderBase.OVector3 output = new RenderBase.OVector3
+            {
+                x = InterpolateLinear(a.x, b.x, mu),
+                y = InterpolateLinear(a.y, b.y, mu),
+                z = InterpolateLinear(a.z, b.z, mu)
+            };
 
             return output;
         }
@@ -93,14 +94,15 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="b">Second vector</param>
         /// <param name="mu">Value between 0-1 of the interpolation amount</param>
         /// <returns></returns>
-        public static RenderBase.OVector4 interpolateLinear(RenderBase.OVector4 a, RenderBase.OVector4 b, float mu)
+        public static RenderBase.OVector4 InterpolateLinear(RenderBase.OVector4 a, RenderBase.OVector4 b, float mu)
         {
-            RenderBase.OVector4 output = new RenderBase.OVector4();
-
-            output.x = interpolateLinear(a.x, b.x, mu);
-            output.y = interpolateLinear(a.y, b.y, mu);
-            output.z = interpolateLinear(a.z, b.z, mu);
-            output.w = interpolateLinear(a.w, b.w, mu);
+            RenderBase.OVector4 output = new RenderBase.OVector4
+            {
+                x = InterpolateLinear(a.x, b.x, mu),
+                y = InterpolateLinear(a.y, b.y, mu),
+                z = InterpolateLinear(a.z, b.z, mu),
+                w = InterpolateLinear(a.w, b.w, mu)
+            };
 
             return output;
         }
@@ -112,7 +114,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="b">Second point</param>
         /// <param name="mu">Value between 0-1 of the interpolation amount</param>
         /// <returns></returns>
-        public static float interpolateLinear(float a, float b, float mu)
+        public static float InterpolateLinear(float a, float b, float mu)
         {
             return (a * (1 - mu) + b * mu);
         }
@@ -123,10 +125,10 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Hermite format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolateHermite(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static float InterpolateHermite(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OAnimationKeyFrame a = getLeftFrame(keyFrames, frame);
-            RenderBase.OAnimationKeyFrame b = getRightFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = GetLeftFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = GetRightFrame(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float outSlope = a.outSlope;
@@ -144,13 +146,13 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be returned or interpolated from the list</param>
         /// <returns></returns>
-        public static float getKey(RenderBase.OAnimationKeyFrameGroup sourceFrame, float frame)
+        public static float GetKey(RenderBase.OAnimationKeyFrameGroup sourceFrame, float frame)
         {
             switch (sourceFrame.interpolation)
             {
-                case RenderBase.OInterpolationMode.step: return interpolateStep(sourceFrame.keyFrames, frame);
-                case RenderBase.OInterpolationMode.linear: return interpolateLinear(sourceFrame.keyFrames, frame);
-                case RenderBase.OInterpolationMode.hermite: return interpolateHermite(sourceFrame.keyFrames, frame);
+                case RenderBase.OInterpolationMode.step: return InterpolateStep(sourceFrame.keyFrames, frame);
+                case RenderBase.OInterpolationMode.linear: return InterpolateLinear(sourceFrame.keyFrames, frame);
+                case RenderBase.OInterpolationMode.hermite: return InterpolateHermite(sourceFrame.keyFrames, frame);
                 default: return 0; //Shouldn't happen
             }
         }

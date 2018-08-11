@@ -18,7 +18,7 @@ namespace Ohana3DS_Transfigured
     {
         bool hasFileToOpen;
         string fileToOpen;
-        FileIO.file file;
+        FileIO.File file;
 
         public FrmMain()
         {
@@ -59,12 +59,12 @@ namespace Ohana3DS_Transfigured
 
             if (hasFileToOpen)
             {
-                RenderBase.OModelGroup group = PC.load(fileToOpen);
+                RenderBase.OModelGroup group = PC.Load(fileToOpen);
                 group.model[0].name = Path.GetFileNameWithoutExtension(fileToOpen);
 
                 object[] arguments = { 0, 0, Path.Combine(Path.GetDirectoryName(fileToOpen), Path.GetFileNameWithoutExtension(fileToOpen)) };
 
-                FileIO.export(FileIO.fileType.model, group, arguments);
+                FileIO.Export(FileIO.FileType.model, group, arguments);
 
                 file.data = null;
 
@@ -74,7 +74,7 @@ namespace Ohana3DS_Transfigured
             }
         }
 
-        public void setFileToOpen(string fileName)
+        public void SetFileToOpen(string fileName)
         {
             hasFileToOpen = true;
             fileToOpen = fileName;
@@ -82,33 +82,33 @@ namespace Ohana3DS_Transfigured
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {
-            if (hasFileToOpen) open(fileToOpen);
+            if (hasFileToOpen) Open(fileToOpen);
             hasFileToOpen = false;
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (currentPanel != null) currentPanel.finalize();
+            if (currentPanel != null) currentPanel.Clear();
         }
 
         delegate void openFile(string fileNmame);
-        FileIO.formatType currentFormat;
+        FileIO.FormatType currentFormat;
         IPanel currentPanel;
 
-        public void open(string fileName)
+        public void Open(string fileName)
         {
-            file = FileIO.load(fileName);
+            file = FileIO.Load(fileName);
             currentFormat = file.type;
 
-            if (file.type != FileIO.formatType.unsupported)
+            if (file.type != FileIO.FormatType.unsupported)
             {
                 switch (file.type)
                 {
-                    case FileIO.formatType.container: currentPanel = new OContainerPanel(); break;
-                    case FileIO.formatType.image: currentPanel = new OImagePanel(); break;
-                    case FileIO.formatType.model: currentPanel = new OViewportPanel(); break;
-                    case FileIO.formatType.texture: currentPanel = new OTexturesPanel(); break;
-                    case FileIO.formatType.animation: currentPanel = new OAnimationsPanel(); break;
+                    case FileIO.FormatType.container: currentPanel = new OContainerPanel(); break;
+                    case FileIO.FormatType.image: currentPanel = new OImagePanel(); break;
+                    case FileIO.FormatType.model: currentPanel = new OViewportPanel(); break;
+                    case FileIO.FormatType.texture: currentPanel = new OTexturesPanel(); break;
+                    case FileIO.FormatType.animation: currentPanel = new OAnimationsPanel(); break;
                 }
 
                 ((Control)currentPanel).Dock = DockStyle.Fill;
@@ -116,7 +116,7 @@ namespace Ohana3DS_Transfigured
                 ContentContainer.Controls.Add((Control)currentPanel);
                 ContentContainer.Controls.SetChildIndex((Control)currentPanel, 0);
                 ResumeDrawing();
-                currentPanel.launch(file.data);
+                currentPanel.Launch(file.data);
             }
             else
                 MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -135,23 +135,23 @@ namespace Ohana3DS_Transfigured
             {
                 for (int i = 0; i < files.Length; i++)
                 {
-                    group = PC.load(files[i]);
+                    group = PC.Load(files[i]);
                     group.model[0].name = Path.GetFileNameWithoutExtension(files[i]);
 
                     object[] arguments = { 0, 0, Path.Combine(Path.GetDirectoryName(files[i]), Path.GetFileNameWithoutExtension(files[i])) };
 
-                    FileIO.export(FileIO.fileType.model, group, arguments);
+                    FileIO.Export(FileIO.FileType.model, group, arguments);
 
                     file.data = null;
                 }
             }
         }
 
-        private void destroyOpenPanels()
+        private void DestroyOpenPanels()
         {
             if (currentPanel != null)
             {
-                currentPanel.finalize();
+                currentPanel.Clear();
                 ContentContainer.Controls.Remove((Control)currentPanel);
             }
         }
@@ -170,8 +170,8 @@ namespace Ohana3DS_Transfigured
                 openDlg.Filter = "All files|*.*";
                 if (openDlg.ShowDialog() == DialogResult.OK)
                 {
-                    destroyOpenPanels();
-                    open(openDlg.FileName);
+                    DestroyOpenPanels();
+                    Open(openDlg.FileName);
                 }
             }
         }
@@ -184,30 +184,30 @@ namespace Ohana3DS_Transfigured
 
         private void MenuViewAANone_Click(object sender, EventArgs e)
         {
-            setAACheckBox((ToolStripMenuItem)sender, 0);
+            SetAACheckBox((ToolStripMenuItem)sender, 0);
         }
 
         private void MenuViewAA2x_Click(object sender, EventArgs e)
         {
-            setAACheckBox((ToolStripMenuItem)sender, 2);
+            SetAACheckBox((ToolStripMenuItem)sender, 2);
         }
 
         private void MenuViewAA4x_Click(object sender, EventArgs e)
         {
-            setAACheckBox((ToolStripMenuItem)sender, 4);
+            SetAACheckBox((ToolStripMenuItem)sender, 4);
         }
 
         private void MenuViewAA8x_Click(object sender, EventArgs e)
         {
-            setAACheckBox((ToolStripMenuItem)sender, 8);
+            SetAACheckBox((ToolStripMenuItem)sender, 8);
         }
 
         private void MenuViewAA16x_Click(object sender, EventArgs e)
         {
-            setAACheckBox((ToolStripMenuItem)sender, 16);
+            SetAACheckBox((ToolStripMenuItem)sender, 16);
         }
 
-        private void setAACheckBox(ToolStripMenuItem control, int value)
+        private void SetAACheckBox(ToolStripMenuItem control, int value)
         {
             MenuViewAANone.Checked = false;
             MenuViewAA2x.Checked = false;
@@ -218,40 +218,40 @@ namespace Ohana3DS_Transfigured
             control.Checked = true;
             Settings.Default.reAntiAlias = value;
             Settings.Default.Save();
-            updateViewportSettings();
-            changesNeedsRestart();
+            UpdateViewportSettings();
+            ChangesNeedsRestart();
         }
 
         //Background
 
         private void MenuViewBgBlack_Click(object sender, EventArgs e)
         {
-            setViewportBgColor(Color.Black.ToArgb());
+            SetViewportBgColor(Color.Black.ToArgb());
         }
 
         private void MenuViewBgGray_Click(object sender, EventArgs e)
         {
-            setViewportBgColor(Color.DimGray.ToArgb());
+            SetViewportBgColor(Color.DimGray.ToArgb());
         }
 
         private void MenuViewBgWhite_Click(object sender, EventArgs e)
         {
-            setViewportBgColor(Color.White.ToArgb());
+            SetViewportBgColor(Color.White.ToArgb());
         }
 
         private void MenuViewBgCustom_Click(object sender, EventArgs e)
         {
             using (ColorDialog colorDlg = new ColorDialog())
             {
-                if (colorDlg.ShowDialog() == DialogResult.OK) setViewportBgColor(colorDlg.Color.ToArgb());
+                if (colorDlg.ShowDialog() == DialogResult.OK) SetViewportBgColor(colorDlg.Color.ToArgb());
             }
         }
 
-        private void setViewportBgColor(int color)
+        private void SetViewportBgColor(int color)
         {
             Settings.Default.reBackgroundColor = color;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         //Show/hide
@@ -261,7 +261,7 @@ namespace Ohana3DS_Transfigured
             MenuViewShowGuidelines.Checked = !MenuViewShowGuidelines.Checked;
             Settings.Default.reShowGuidelines = MenuViewShowGuidelines.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         private void MenuViewShowInformation_Click(object sender, EventArgs e)
@@ -269,7 +269,7 @@ namespace Ohana3DS_Transfigured
             MenuViewShowInformation.Checked = !MenuViewShowInformation.Checked;
             Settings.Default.reShowInformation = MenuViewShowInformation.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         private void MenuViewShowAllMeshes_Click(object sender, EventArgs e)
@@ -277,7 +277,7 @@ namespace Ohana3DS_Transfigured
             MenuViewShowAllMeshes.Checked = !MenuViewShowAllMeshes.Checked;
             Settings.Default.reShowAllMeshes = MenuViewShowAllMeshes.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         //Texturing
@@ -299,8 +299,8 @@ namespace Ohana3DS_Transfigured
 
             Settings.Default.reFragmentShader = MenuViewFragmentShader.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
-            changesNeedsRestart();
+            UpdateViewportSettings();
+            ChangesNeedsRestart();
         }
 
         private void MenuViewTexUseFirst_Click(object sender, EventArgs e)
@@ -309,7 +309,7 @@ namespace Ohana3DS_Transfigured
             MenuViewTexUseLast.Checked = false;
             Settings.Default.reLegacyTexturingMode = 0;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         private void MenuViewTexUseLast_Click(object sender, EventArgs e)
@@ -318,7 +318,7 @@ namespace Ohana3DS_Transfigured
             MenuViewTexUseLast.Checked = true;
             Settings.Default.reLegacyTexturingMode = 1;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         //Misc. UI
@@ -328,7 +328,7 @@ namespace Ohana3DS_Transfigured
             MenuViewShowSidebar.Checked = !MenuViewShowSidebar.Checked;
             Settings.Default.viewShowSidebar = MenuViewShowSidebar.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
         private void MenuViewWireframeMode_Click(object sender, EventArgs e)
@@ -336,22 +336,22 @@ namespace Ohana3DS_Transfigured
             MenuViewWireframeMode.Checked = !MenuViewWireframeMode.Checked;
             Settings.Default.reWireframeMode = MenuViewWireframeMode.Checked;
             Settings.Default.Save();
-            updateViewportSettings();
+            UpdateViewportSettings();
         }
 
-        private void updateViewportSettings()
+        private void UpdateViewportSettings()
         {
-            if (currentFormat == FileIO.formatType.model)
+            if (currentFormat == FileIO.FormatType.model)
             {
                 OViewportPanel viewport = (OViewportPanel)currentPanel;
-                viewport.renderer.updateSettings();
+                viewport.renderer.UpdateSettings();
                 viewport.ShowSidebar = MenuViewShowSidebar.Checked;
             }
         }
 
-        private void changesNeedsRestart()
+        private void ChangesNeedsRestart()
         {
-            if (currentFormat == FileIO.formatType.model)
+            if (currentFormat == FileIO.FormatType.model)
             {
                 MessageBox.Show(
                     "Please restart the rendering engine to make those changes take effect!",

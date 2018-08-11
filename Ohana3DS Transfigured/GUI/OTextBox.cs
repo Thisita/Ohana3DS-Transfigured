@@ -91,7 +91,7 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (ChangedText != null) ChangedText(this, EventArgs.Empty);
+            ChangedText?.Invoke(this, EventArgs.Empty);
         }
 
         private class CustomTextBox : TextBox

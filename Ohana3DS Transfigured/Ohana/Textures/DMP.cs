@@ -12,13 +12,13 @@ namespace Ohana3DS_Transfigured.Ohana.Textures
         /// </summary>
         /// <param name="data">The DMP image data</param>
         /// <returns>The image as a texture</returns>
-        public static RenderBase.OTexture load(Stream data)
+        public static RenderBase.OTexture Load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
-            string dmpMagic = IOUtils.readString(input, 0, 3);
+            string dmpMagic = IOUtils.ReadString(input, 0, 3);
             if (dmpMagic != "DMP") throw new Exception("DMP: Invalid or corrupted file!");
 
-            string format = IOUtils.readString(input, 4, 4);
+            string format = IOUtils.ReadString(input, 4, 4);
             int width = input.ReadUInt16();
             int height = input.ReadUInt16();
             int pow2Width = input.ReadUInt16();
@@ -31,7 +31,7 @@ namespace Ohana3DS_Transfigured.Ohana.Textures
             Bitmap bmp = null;
             switch (format)
             {
-                case "8888": bmp = TextureCodec.decode(buffer, pow2Width, pow2Height, RenderBase.OTextureFormat.rgba8); break;
+                case "8888": bmp = TextureCodec.Decode(buffer, pow2Width, pow2Height, RenderBase.OTextureFormat.rgba8); break;
             }
 
             Bitmap newBmp = new Bitmap(width, height);

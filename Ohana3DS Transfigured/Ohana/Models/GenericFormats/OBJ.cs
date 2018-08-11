@@ -13,7 +13,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
         /// <param name="model">The model to be exported</param>
         /// <param name="fileName">The output file name</param>
         /// <param name="modelIndex">The index of the model that should be exported</param>
-        public static void export(RenderBase.OModelGroup model, string fileName, int modelIndex)
+        public static void Export(RenderBase.OModelGroup model, string fileName, int modelIndex)
         {
             StringBuilder output = new StringBuilder();
 
@@ -28,12 +28,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 output.AppendLine("usemtl " + mdl.material[mdl.mesh[objIndex].materialId].name0 + ".png");
                 output.AppendLine(null);
 
-                MeshUtils.optimizedMesh obj = MeshUtils.optimizeMesh(mdl.mesh[objIndex]);
+                MeshUtils.OptimizedMesh obj = MeshUtils.OptimizeMesh(mdl.mesh[objIndex]);
                 foreach (RenderBase.OVertex vertex in obj.vertices)
                 {
-                    output.AppendLine("v " + getString(vertex.position.x) + " " + getString(vertex.position.y) + " " + getString(vertex.position.z));
-                    output.AppendLine("vn " + getString(vertex.normal.x) + " " + getString(vertex.normal.y) + " " + getString(vertex.normal.z));
-                    output.AppendLine("vt " + getString(vertex.texture0.x) + " " + getString(vertex.texture0.y));
+                    output.AppendLine("v " + GetString(vertex.position.x) + " " + GetString(vertex.position.y) + " " + GetString(vertex.position.z));
+                    output.AppendLine("vn " + GetString(vertex.normal.x) + " " + GetString(vertex.normal.y) + " " + GetString(vertex.normal.z));
+                    output.AppendLine("vt " + GetString(vertex.texture0.x) + " " + GetString(vertex.texture0.y));
                 }
                 output.AppendLine(null);
 
@@ -58,7 +58,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
         /// </summary>
         /// <param name="value">The Float value</param>
         /// <returns></returns>
-        private static string getString(float value)
+        private static string GetString(float value)
         {
             return value.ToString(CultureInfo.InvariantCulture);
         }

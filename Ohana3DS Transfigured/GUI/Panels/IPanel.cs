@@ -2,7 +2,7 @@
 {
     interface IPanel
     {
-        void finalize();
-        void launch(object data);
+        void Clear();
+        void Launch(object data);
     }
 }

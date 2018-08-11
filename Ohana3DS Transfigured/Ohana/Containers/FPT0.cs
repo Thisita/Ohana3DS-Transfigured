@@ -6,7 +6,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
 {
     public class FPT0
     {
-        private struct sectionEntry
+        private struct SectionEntry
         {
             public string name;
             public uint offset;
@@ -18,9 +18,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns></returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream with container data</param>
         /// <returns></returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
             OContainer output = new OContainer();
@@ -38,12 +38,13 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             uint baseAddress = 0x10 + (entries * 0x20) + 0x80;
             input.ReadUInt32();
 
-            List<sectionEntry> files = new List<sectionEntry>();
+            List<SectionEntry> files = new List<SectionEntry>();
             for (int i = 0; i < entries; i++)
             {
-                sectionEntry entry = new sectionEntry();
-
-                entry.name = IOUtils.readString(input, (uint)(0x10 + (i * 0x20)));
+                SectionEntry entry = new SectionEntry
+                {
+                    name = IOUtils.ReadString(input, (uint)(0x10 + (i * 0x20)))
+                };
                 data.Seek(0x20 + (i * 0x20), SeekOrigin.Begin);
                 input.ReadUInt32(); //Memory address?
                 entry.offset = input.ReadUInt32() + baseAddress;
@@ -53,9 +54,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                 files.Add(entry);
             }
 
-            foreach (sectionEntry file in files)
+            foreach (SectionEntry file in files)
             {
-                OContainer.fileEntry entry = new OContainer.fileEntry();
+                OContainer.FileEntry entry = new OContainer.FileEntry();
 
                 data.Seek(file.offset, SeekOrigin.Begin);
                 byte[] buffer = new byte[file.length];

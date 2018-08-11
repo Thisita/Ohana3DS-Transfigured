@@ -15,16 +15,16 @@ namespace Ohana3DS_Transfigured.GUI
             InitializeComponent();
         }
 
-        public void launch(RenderEngine renderEngine)
+        public void Launch(RenderEngine renderEngine)
         {
             renderer = renderEngine;
-            updateList();
+            UpdateList();
         }
 
-        private void updateList()
+        private void UpdateList()
         {
-            ModelList.flush();
-            foreach (RenderBase.OModel model in renderer.models.model) ModelList.addItem(model.name);
+            ModelList.Flush();
+            foreach (RenderBase.OModel model in renderer.models.model) ModelList.AddItem(model.name);
             if (ModelList.Count > 0) ModelList.SelectedIndex = 0;
             ModelList.Refresh();
         }
@@ -36,16 +36,16 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void BtnExport_Click(object sender, EventArgs e)
         {
-            FileIO.export(FileIO.fileType.model, renderer.models, ModelList.SelectedIndex);
+            FileIO.Export(FileIO.FileType.model, renderer.models, ModelList.SelectedIndex);
         }
 
         private void BtnImport_Click(object sender, EventArgs e)
         {
-            object importedData = FileIO.import(FileIO.fileType.model);
+            object importedData = FileIO.Import(FileIO.FileType.model);
             if (importedData != null)
             {
                 renderer.models.model.AddRange((List<RenderBase.OModel>)importedData);
-                foreach (RenderBase.OModel model in (List<RenderBase.OModel>)importedData) ModelList.addItem(model.name);
+                foreach (RenderBase.OModel model in (List<RenderBase.OModel>)importedData) ModelList.AddItem(model.name);
                 ModelList.Refresh();
             }
         }
@@ -57,14 +57,14 @@ namespace Ohana3DS_Transfigured.GUI
             renderer.models.model.RemoveAt(ModelList.SelectedIndex);
             renderer.CurrentModel = ModelList.SelectedIndex;
 
-            ModelList.removeItem(ModelList.SelectedIndex);
+            ModelList.RemoveItem(ModelList.SelectedIndex);
         }
 
         private void BtnClear_Click(object sender, EventArgs e)
         {
             renderer.CurrentModel = -1;
             renderer.models.model.Clear();
-            updateList();
+            UpdateList();
         }
     }
 }

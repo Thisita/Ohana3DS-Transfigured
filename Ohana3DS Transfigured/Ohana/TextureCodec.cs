@@ -6,8 +6,8 @@ namespace Ohana3DS_Transfigured.Ohana
 {
     class TextureCodec
     {
-        private static int[] tileOrder = { 0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63 };
-        private static int[,] etc1LUT = { { 2, 8, -2, -8 }, { 5, 17, -5, -17 }, { 9, 29, -9, -29 }, { 13, 42, -13, -42 }, { 18, 60, -18, -60 }, { 24, 80, -24, -80 }, { 33, 106, -33, -106 }, { 47, 183, -47, -183 } };
+        private static readonly int[] tileOrder = { 0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63 };
+        private static readonly int[,] etc1LUT = { { 2, 8, -2, -8 }, { 5, 17, -5, -17 }, { 9, 29, -9, -29 }, { 13, 42, -13, -42 }, { 18, 60, -18, -60 }, { 24, 80, -24, -80 }, { 33, 106, -33, -106 }, { 47, 183, -47, -183 } };
 
         #region "Decode"
         /// <summary>
@@ -18,7 +18,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="height">Height of the Texture</param>
         /// <param name="format">Pixel Format of the Texture</param>
         /// <returns></returns>
-        public static Bitmap decode(byte[] data, int width, int height, RenderBase.OTextureFormat format)
+        public static Bitmap Decode(byte[] data, int width, int height, RenderBase.OTextureFormat format)
         {
             byte[] output = new byte[width * height * 4];
             long dataOffset = 0;
@@ -288,8 +288,8 @@ namespace Ohana3DS_Transfigured.Ohana
 
                 case RenderBase.OTextureFormat.etc1:
                 case RenderBase.OTextureFormat.etc1a4:
-                    byte[] decodedData = etc1Decode(data, width, height, format == RenderBase.OTextureFormat.etc1a4);
-                    int[] etc1Order = etc1Scramble(width, height);
+                    byte[] decodedData = Etc1Decode(data, width, height, format == RenderBase.OTextureFormat.etc1a4);
+                    int[] etc1Order = Etc1Scramble(width, height);
 
                     int i = 0;
                     for (int tY = 0; tY < height / 4; tY++) {
@@ -311,11 +311,11 @@ namespace Ohana3DS_Transfigured.Ohana
                     break;
             }
 
-            return TextureUtils.getBitmap(output.ToArray(), width, height);
+            return TextureUtils.GetBitmap(output.ToArray(), width, height);
         }
 
         #region "ETC1"
-        private static byte[] etc1Decode(byte[] input, int width, int height, bool alpha)
+        private static byte[] Etc1Decode(byte[] input, int width, int height, bool alpha)
         {
             byte[] output = new byte[(width * height * 4)];
             long offset = 0;
@@ -345,7 +345,7 @@ namespace Ohana3DS_Transfigured.Ohana
                         offset += 8;
                     }
 
-                    colorBlock = etc1DecodeBlock(colorBlock);
+                    colorBlock = Etc1DecodeBlock(colorBlock);
 
                     bool toggle = false;
                     long alphaOffset = 0;
@@ -368,7 +368,7 @@ namespace Ohana3DS_Transfigured.Ohana
             return output;
         }
 
-        private static byte[] etc1DecodeBlock(byte[] data)
+        private static byte[] Etc1DecodeBlock(byte[] data)
         {
             uint blockTop = BitConverter.ToUInt32(data, 0);
             uint blockBottom = BitConverter.ToUInt32(data, 4);
@@ -426,8 +426,8 @@ namespace Ohana3DS_Transfigured.Ohana
                 {
                     for (int x = 0; x <= 1; x++)
                     {
-                        Color color1 = etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
-                        Color color2 = etc1Pixel(r2, g2, b2, x + 2, y, blockBottom, table2);
+                        Color color1 = Etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
+                        Color color2 = Etc1Pixel(r2, g2, b2, x + 2, y, blockBottom, table2);
 
                         int offset1 = (y * 4 + x) * 4;
                         output[offset1] = color1.B;
@@ -447,8 +447,8 @@ namespace Ohana3DS_Transfigured.Ohana
                 {
                     for (int x = 0; x <= 3; x++)
                     {
-                        Color color1 = etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
-                        Color color2 = etc1Pixel(r2, g2, b2, x, y + 2, blockBottom, table2);
+                        Color color1 = Etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
+                        Color color2 = Etc1Pixel(r2, g2, b2, x, y + 2, blockBottom, table2);
 
                         int offset1 = (y * 4 + x) * 4;
                         output[offset1] = color1.B;
@@ -466,7 +466,7 @@ namespace Ohana3DS_Transfigured.Ohana
             return output;
         }
 
-        private static Color etc1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
+        private static Color Etc1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
         {
             int index = x * 4 + y;
             uint MSB = block << 1;
@@ -475,21 +475,21 @@ namespace Ohana3DS_Transfigured.Ohana
                 ? etc1LUT[table, ((block >> (index + 24)) & 1) + ((MSB >> (index + 8)) & 2)] 
                 : etc1LUT[table, ((block >> (index + 8)) & 1) + ((MSB >> (index - 8)) & 2)];
 
-            r = saturate((int)(r + pixel));
-            g = saturate((int)(g + pixel));
-            b = saturate((int)(b + pixel));
+            r = Saturate((int)(r + pixel));
+            g = Saturate((int)(g + pixel));
+            b = Saturate((int)(b + pixel));
 
             return Color.FromArgb((int)r, (int)g, (int)b);
         }
 
-        private static byte saturate(int value)
+        private static byte Saturate(int value)
         {
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;
             return (byte)(value & 0xff);
         }
 
-        private static int[] etc1Scramble(int width, int height)
+        private static int[] Etc1Scramble(int width, int height)
         {
             //Maybe theres a better way to do this?
             int[] tileScramble = new int[((width / 4) * (height / 4))];

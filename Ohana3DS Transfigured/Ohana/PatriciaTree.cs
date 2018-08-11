@@ -4,17 +4,17 @@ namespace Ohana3DS_Transfigured.Ohana
 {
     class PatriciaTree
     {
-        public class node
+        public class Node
         {
             public int index;
             public int referenceBit;
             public string name;
-            public node left, right;
+            public Node left, right;
         }
         public int nodeCount;
         public int maxLength;
-        public List<node> nodes = new List<node>();
-        public node rootNode = new node();
+        public List<Node> nodes = new List<Node>();
+        public Node rootNode = new Node();
 
         public PatriciaTree(List<string> keys)
         {
@@ -22,39 +22,41 @@ namespace Ohana3DS_Transfigured.Ohana
             rootNode.right = rootNode;
             rootNode.referenceBit = -1;
             foreach (string key in keys) if (key.Length > maxLength) maxLength = key.Length;
-            foreach (string key in keys) nodes.Add(insert(key));
+            foreach (string key in keys) nodes.Add(Insert(key));
         }
 
-        private node insert(string key)
+        private Node Insert(string key)
         {
-            node rootNode = this.rootNode;
-            node leftNode = rootNode.left;
+            Node rootNode = this.rootNode;
+            Node leftNode = rootNode.left;
             int bit = (maxLength << 3) - 1;
             while (rootNode.referenceBit > leftNode.referenceBit)
             {
                 rootNode = leftNode;
-                if (getBit(key, leftNode.referenceBit))
+                if (GetBit(key, leftNode.referenceBit))
                     leftNode = leftNode.right;
                 else
                     leftNode = leftNode.left;
             }
-            while (getBit(leftNode.name, bit) == getBit(key, bit)) bit--;
+            while (GetBit(leftNode.name, bit) == GetBit(key, bit)) bit--;
 
             rootNode = this.rootNode;
             leftNode = rootNode.left;
             while ((rootNode.referenceBit > leftNode.referenceBit) && (leftNode.referenceBit > bit))
             {
                 rootNode = leftNode;
-                if (getBit(key, leftNode.referenceBit))
+                if (GetBit(key, leftNode.referenceBit))
                     leftNode = leftNode.right;
                 else
                     leftNode = leftNode.left;
             }
 
-            node output = new node();
-            output.name = key;
-            output.referenceBit = bit;
-            if (getBit(key, bit))
+            Node output = new Node
+            {
+                name = key,
+                referenceBit = bit
+            };
+            if (GetBit(key, bit))
             {
                 output.left = leftNode;
                 output.right = output;
@@ -68,7 +70,7 @@ namespace Ohana3DS_Transfigured.Ohana
             return output;
         }
 
-        private bool getBit(string name, int bit)
+        private bool GetBit(string name, int bit)
         {
             int position = bit >> 3;
             int charBit = bit & 7;

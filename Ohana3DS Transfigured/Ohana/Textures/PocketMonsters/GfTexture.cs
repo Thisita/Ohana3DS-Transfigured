@@ -17,19 +17,19 @@ namespace Ohana3DS_Transfigured.Ohana.Textures.PocketMonsters
         /// </summary>
         /// <param name="data">The texture data</param>
         /// <returns>The image as a texture</returns>
-        public static RenderBase.OTexture load(Stream data, bool keepOpen = false)
+        public static RenderBase.OTexture Load(Stream data, bool keepOpen = false)
         {
             BinaryReader input = new BinaryReader(data);
             long descAddress = data.Position;
 
             data.Seek(8, SeekOrigin.Current);
-            if (IOUtils.readStringWithLength(input, 7) != "texture") return null;
+            if (IOUtils.ReadStringWithLength(input, 7) != "texture") return null;
 
             data.Seek(descAddress + 0x18, SeekOrigin.Begin);
             int texLength = input.ReadInt32();
 
             data.Seek(descAddress + 0x28, SeekOrigin.Begin);
-            string texName = IOUtils.readStringWithLength(input, 0x40);
+            string texName = IOUtils.ReadStringWithLength(input, 0x40);
 
             data.Seek(descAddress + 0x68, SeekOrigin.Begin);
             ushort width = input.ReadUInt16();
@@ -62,7 +62,7 @@ namespace Ohana3DS_Transfigured.Ohana.Textures.PocketMonsters
                 default: Debug.WriteLine("Unk tex fmt " + texFormat.ToString("X4") + " @ " + texName); break;
             }
 
-            Bitmap tex = TextureCodec.decode(texBuffer, width, height, fmt);
+            Bitmap tex = TextureCodec.Decode(texBuffer, width, height, fmt);
 
             if (!keepOpen) data.Close();
 

@@ -18,11 +18,11 @@ namespace Ohana3DS_Transfigured.GUI
 
         public OGroupBox()
         {
-            init();
+            Init();
             InitializeComponent();
         }
 
-        private void init()
+        private void Init()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.UserPaint, true);
@@ -49,7 +49,7 @@ namespace Ohana3DS_Transfigured.GUI
             set
             {
                 if (value == collapsed) return;
-                if (value) collapse(); else expand();
+                if (value) Collapse(); else Expand();
             }
         }
 
@@ -66,7 +66,7 @@ namespace Ohana3DS_Transfigured.GUI
             set
             {
                 autoSize = value;
-                recalc();
+                Recalc();
             }
         }
 
@@ -82,7 +82,7 @@ namespace Ohana3DS_Transfigured.GUI
             set
             {
                 title = value;
-                updateTitle();
+                UpdateTitle();
             }
         }
 
@@ -131,10 +131,10 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void Control_Layout(object sender, EventArgs e)
         {
-            recalc();
+            Recalc();
         }
 
-        private void recalc()
+        private void Recalc()
         {
             if (autoSize)
             {
@@ -152,16 +152,16 @@ namespace Ohana3DS_Transfigured.GUI
         /// <summary>
         ///     Forces the size to be recalculated, if AutomaticSize is enabled.
         /// </summary>
-        public void recalculateSize()
+        public void RecalculateSize()
         {
-            recalc();
+            Recalc();
         }
 
         private void OGroupBox_Layout(object sender, LayoutEventArgs e)
         {
             ContentPanel.Location = new Point(0, TitleBar.Height);
             ContentPanel.Size = new Size(Width, Height - TitleBar.Height);
-            updateTitle();
+            UpdateTitle();
         }
 
         private void OGroupBox_EnabledChanged(object sender, EventArgs e)
@@ -182,28 +182,28 @@ namespace Ohana3DS_Transfigured.GUI
         private void BtnToggle_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-            if (collapsed) expand(); else collapse();
+            if (collapsed) Expand(); else Collapse();
         }
 
-        private void updateTitle()
+        private void UpdateTitle()
         {
             using (Graphics g = Graphics.FromHwnd(Handle))
             {
-                LblTitle.Text = DrawingUtils.clampText(g, title, LblTitle.Font, Width - (BtnToggle.Width + 4));
+                LblTitle.Text = DrawingUtils.ClampText(g, title, LblTitle.Font, Width - (BtnToggle.Width + 4));
             }
         }
 
-        private void expand()
+        private void Expand()
         {
-            recalc();
+            Recalc();
             collapsed = false;
             BtnToggle.Image = Properties.Resources.ui_icon_minus;
             Height = originalHeight;
 
-            if (GroupBoxExpanded != null) GroupBoxExpanded(this, EventArgs.Empty);
+            GroupBoxExpanded?.Invoke(this, EventArgs.Empty);
         }
 
-        private void collapse()
+        private void Collapse()
         {
             collapsed = true;
             BtnToggle.Image = Properties.Resources.ui_icon_plus;

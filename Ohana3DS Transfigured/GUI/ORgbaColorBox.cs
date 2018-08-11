@@ -34,7 +34,7 @@ namespace Ohana3DS_Transfigured.GUI
         {
             get
             {
-                return currentColor();
+                return CurrentColor();
             }
             set
             {
@@ -42,46 +42,46 @@ namespace Ohana3DS_Transfigured.GUI
                 SeekR.Value = value.R;
                 SeekG.Value = value.G;
                 SeekB.Value = value.B;
-                updateColor(false);
+                UpdateColor(false);
             }
         }
 
         private void SeekR_ValueChanged(object sender, EventArgs e)
         {
-            updateColor();
+            UpdateColor();
         }
 
         private void SeekG_ValueChanged(object sender, EventArgs e)
         {
-            updateColor();
+            UpdateColor();
         }
 
         private void SeekB_ValueChanged(object sender, EventArgs e)
         {
-            updateColor();
+            UpdateColor();
         }
 
         private void SeekA_ValueChanged(object sender, EventArgs e)
         {
-            updateColor();
+            UpdateColor();
         }
 
-        private void updateColor(bool colorChanged = true)
+        private void UpdateColor(bool colorChanged = true)
         {
-            SelectedColor.BackColor = currentColor();
+            SelectedColor.BackColor = CurrentColor();
             if (ColorChanged != null && colorChanged) ColorChanged(this, EventArgs.Empty);
         }
 
-        private Color currentColor()
+        private Color CurrentColor()
         {
-            int a = clamp((int)SeekA.Value);
-            int r = clamp((int)SeekR.Value);
-            int g = clamp((int)SeekG.Value);
-            int b = clamp((int)SeekB.Value);
+            int a = Clamp((int)SeekA.Value);
+            int r = Clamp((int)SeekR.Value);
+            int g = Clamp((int)SeekG.Value);
+            int b = Clamp((int)SeekB.Value);
             return Color.FromArgb(a, r, g, b);
         }
 
-        private int clamp(int value)
+        private int Clamp(int value)
         {
             return Math.Max(Math.Min(value, 255), 0);
         }

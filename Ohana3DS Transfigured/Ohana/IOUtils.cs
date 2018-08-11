@@ -13,7 +13,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="input">The Reader of the File Stream</param>
         /// <param name="address">Address where the text begins</param>
         /// <returns></returns>
-        public static string readString(BinaryReader input, uint address, bool advancePosition = false)
+        public static string ReadString(BinaryReader input, uint address, bool advancePosition = false)
         {
             long originalPosition = input.BaseStream.Position;
             input.BaseStream.Seek(address, SeekOrigin.Begin);
@@ -37,7 +37,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="address">Address where the text begins</param>
         /// <param name="count">Number of bytes that the text have</param>
         /// <returns></returns>
-        public static string readString(BinaryReader input, uint address, uint count)
+        public static string ReadString(BinaryReader input, uint address, uint count)
         {
             input.BaseStream.Seek(address, SeekOrigin.Begin);
             MemoryStream bytes = new MemoryStream();
@@ -58,7 +58,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="input">The Reader of the File Stream</param>
         /// <param name="count">Number of bytes that the text have</param>
         /// <returns></returns>
-        public static string readStringWithLength(BinaryReader input, uint count)
+        public static string ReadStringWithLength(BinaryReader input, uint count)
         {
             MemoryStream bytes = new MemoryStream();
             for (int i = 0; i < count; i++)
@@ -76,7 +76,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="value">The value that should be sign-extended</param>
         /// <param name="bits">Number of bits that the value have</param>
         /// <returns></returns>
-        public static int signExtend(uint value, int bits)
+        public static int SignExtend(uint value, int bits)
         {
             int output = (int)value;
             bool sign = (value & (1 << (bits - 1))) > 0;
@@ -90,7 +90,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="value">The value that should be sign-extended</param>
         /// <param name="bits">Number of bits that the value have</param>
         /// <returns></returns>
-        public static int signExtend(int value, int bits)
+        public static int SignExtend(int value, int bits)
         {
             bool sign = (value & (1 << (bits - 1))) > 0;
             if (sign) value -= (1 << bits);
@@ -102,7 +102,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         /// <param name="value">The value to be swapped</param>
         /// <returns>The swapped value</returns>
-        public static uint endianSwap(uint value)
+        public static uint EndianSwap(uint value)
         {
             return
                 (value >> 24) |

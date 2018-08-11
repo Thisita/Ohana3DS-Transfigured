@@ -4,7 +4,7 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
 {
     class Yaz0
     {
-        public static byte[] decompress(Stream data, uint decodedLength)
+        public static byte[] Decompress(Stream data, uint decodedLength)
         {
             byte[] input = new byte[data.Length - data.Position];
             data.Read(input, 0, input.Length);

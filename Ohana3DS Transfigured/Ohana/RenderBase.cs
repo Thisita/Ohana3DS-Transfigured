@@ -49,7 +49,7 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Writes the Vector to a Stream using a BinaryWriter.
             /// </summary>
             /// <param name="output">The Writer of the output Stream</param>
-            public void write(BinaryWriter output)
+            public void Write(BinaryWriter output)
             {
                 output.Write(x);
                 output.Write(y);
@@ -127,7 +127,7 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Writes the Vector to a Stream using a BinaryWriter.
             /// </summary>
             /// <param name="output">The Writer of the output Stream</param>
-            public void write(BinaryWriter output)
+            public void Write(BinaryWriter output)
             {
                 output.Write(x);
                 output.Write(y);
@@ -140,12 +140,14 @@ namespace Ohana3DS_Transfigured.Ohana
             /// <param name="input">Input vector</param>
             /// <param name="matrix">The matrix</param>
             /// <returns></returns>
-            public static OVector3 transform(OVector3 input, OMatrix matrix)
+            public static OVector3 Transform(OVector3 input, OMatrix matrix)
             {
-                OVector3 output = new OVector3();
-                output.x = input.x * matrix.M11 + input.y * matrix.M21 + input.z * matrix.M31 + matrix.M41;
-                output.y = input.x * matrix.M12 + input.y * matrix.M22 + input.z * matrix.M32 + matrix.M42;
-                output.z = input.x * matrix.M13 + input.y * matrix.M23 + input.z * matrix.M33 + matrix.M43;
+                OVector3 output = new OVector3
+                {
+                    x = input.x * matrix.M11 + input.y * matrix.M21 + input.z * matrix.M31 + matrix.M41,
+                    y = input.x * matrix.M12 + input.y * matrix.M22 + input.z * matrix.M32 + matrix.M42,
+                    z = input.x * matrix.M13 + input.y * matrix.M23 + input.z * matrix.M33 + matrix.M43
+                };
                 return output;
             }
 
@@ -187,17 +189,17 @@ namespace Ohana3DS_Transfigured.Ohana
                 return !(a == b);
             }
 
-            public float length()
+            public float Length()
             {
-                return (float)Math.Sqrt(dot(this, this));
+                return (float)Math.Sqrt(Dot(this, this));
             }
 
-            public OVector3 normalize()
+            public OVector3 Normalize()
             {
-                return this / length();
+                return this / Length();
             }
 
-            public static float dot(OVector3 a, OVector3 b)
+            public static float Dot(OVector3 a, OVector3 b)
             {
                 float x = a.x * b.x;
                 float y = a.y * b.y;
@@ -273,7 +275,7 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Writes the Vector to a Stream using a BinaryWriter.
             /// </summary>
             /// <param name="output">The Writer of the output Stream</param>
-            public void write(BinaryWriter output)
+            public void Write(BinaryWriter output)
             {
                 output.Write(x);
                 output.Write(y);
@@ -285,13 +287,14 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Converts the Quaternion representation on this Vector to the Euler representation.
             /// </summary>
             /// <returns>The Euler X, Y and Z rotation angles in radians</returns>
-            public OVector3 toEuler()
+            public OVector3 ToEuler()
             {
-                OVector3 output = new OVector3();
-
-                output.z = (float)Math.Atan2(2 * (x * y + z * w), 1 - 2 * (y * y + z * z));
-                output.y = -(float)Math.Asin(2 * (x * z - w * y));
-                output.x = (float)Math.Atan2(2 * (x * w + y * z), -(1 - 2 * (z * z + w * w)));
+                OVector3 output = new OVector3
+                {
+                    z = (float)Math.Atan2(2 * (x * y + z * w), 1 - 2 * (y * y + z * z)),
+                    y = -(float)Math.Asin(2 * (x * z - w * y)),
+                    x = (float)Math.Atan2(2 * (x * w + y * z), -(1 - 2 * (z * z + w * w)))
+                };
 
                 return output;
             }
@@ -429,7 +432,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OMatrix
         { //4x4
-            float[,] matrix;
+            readonly float[,] matrix;
 
             public OMatrix()
             {
@@ -496,7 +499,7 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Gets the Inverse of the Matrix.
             /// </summary>
             /// <returns></returns>
-            public OMatrix invert()
+            public OMatrix Invert()
             {
                 float[,] opMatrix = new float[4, 8];
 
@@ -549,27 +552,28 @@ namespace Ohana3DS_Transfigured.Ohana
                     }
                 }
 
-                OMatrix output = new OMatrix();
+                OMatrix output = new OMatrix
+                {
+                    M11 = opMatrix[0, 4],
+                    M12 = opMatrix[0, 5],
+                    M13 = opMatrix[0, 6],
+                    M14 = opMatrix[0, 7],
 
-                output.M11 = opMatrix[0, 4];
-                output.M12 = opMatrix[0, 5];
-                output.M13 = opMatrix[0, 6];
-                output.M14 = opMatrix[0, 7];
+                    M21 = opMatrix[1, 4],
+                    M22 = opMatrix[1, 5],
+                    M23 = opMatrix[1, 6],
+                    M24 = opMatrix[1, 7],
 
-                output.M21 = opMatrix[1, 4];
-                output.M22 = opMatrix[1, 5];
-                output.M23 = opMatrix[1, 6];
-                output.M24 = opMatrix[1, 7];
+                    M31 = opMatrix[2, 4],
+                    M32 = opMatrix[2, 5],
+                    M33 = opMatrix[2, 6],
+                    M34 = opMatrix[2, 7],
 
-                output.M31 = opMatrix[2, 4];
-                output.M32 = opMatrix[2, 5];
-                output.M33 = opMatrix[2, 6];
-                output.M34 = opMatrix[2, 7];
-
-                output.M41 = opMatrix[3, 4];
-                output.M42 = opMatrix[3, 5];
-                output.M43 = opMatrix[3, 6];
-                output.M44 = opMatrix[3, 7];
+                    M41 = opMatrix[3, 4],
+                    M42 = opMatrix[3, 5],
+                    M43 = opMatrix[3, 6],
+                    M44 = opMatrix[3, 7]
+                };
 
                 return output;
             }
@@ -579,7 +583,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="scale">The Scale proportions</param>
             /// <returns></returns>
-            public static OMatrix scale(OVector3 scale)
+            public static OMatrix Scale(OVector3 scale)
             {
                 OMatrix output = new OMatrix
                 {
@@ -596,7 +600,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="scale">The Scale proportions</param>
             /// <returns></returns>
-            public static OMatrix scale(OVector2 scale)
+            public static OMatrix Scale(OVector2 scale)
             {
                 OMatrix output = new OMatrix
                 {
@@ -612,7 +616,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="scale">The Scale proportion</param>
             /// <returns></returns>
-            public static OMatrix scale(float scale)
+            public static OMatrix Scale(float scale)
             {
                 OMatrix output = new OMatrix
                 {
@@ -629,7 +633,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="angle">Angle in radians</param>
             /// <returns></returns>
-            public static OMatrix rotateX(float angle)
+            public static OMatrix RotateX(float angle)
             {
                 OMatrix output = new OMatrix
                 {
@@ -647,7 +651,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="angle">Angle in radians</param>
             /// <returns></returns>
-            public static OMatrix rotateY(float angle)
+            public static OMatrix RotateY(float angle)
             {
                 OMatrix output = new OMatrix
                 {
@@ -665,7 +669,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="angle">Angle in radians</param>
             /// <returns></returns>
-            public static OMatrix rotateZ(float angle)
+            public static OMatrix RotateZ(float angle)
             {
                 OMatrix output = new OMatrix
                 {
@@ -683,7 +687,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="position">The Position offset</param>
             /// <returns></returns>
-            public static OMatrix translate(OVector3 position)
+            public static OMatrix Translate(OVector3 position)
             {
                 OMatrix output = new OMatrix
                 {
@@ -700,7 +704,7 @@ namespace Ohana3DS_Transfigured.Ohana
             /// </summary>
             /// <param name="position">The Position offset</param>
             /// <returns></returns>
-            public static OMatrix translate(OVector2 position)
+            public static OMatrix Translate(OVector2 position)
             {
                 OMatrix output = new OMatrix
                 {
@@ -1498,7 +1502,7 @@ namespace Ohana3DS_Transfigured.Ohana
             public OMatrix transform;
 
             public OVector3 minVector, maxVector;
-            public int verticesCount
+            public int VerticesCount
             {
                 get
                 {
@@ -1545,7 +1549,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <summary>
         ///     Texture, contains the texture name and Bitmap image.
         /// </summary>
-        public class OTexture
+        public class OTexture : IDisposable
         {
             public Bitmap texture;
             public string name;
@@ -1560,6 +1564,21 @@ namespace Ohana3DS_Transfigured.Ohana
                 texture = new Bitmap(_texture);
                 _texture.Dispose();
                 name = _name;
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    texture.Dispose();
+                }
+                // free native resources
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
             }
         }
 
@@ -1942,9 +1961,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OAnimationBase
         {
-            public virtual string name { get; set; }
-            public virtual float frameSize { get; set; }
-            public virtual OLoopMode loopMode { get; set; }
+            public virtual string Name { get; set; }
+            public virtual float FrameSize { get; set; }
+            public virtual OLoopMode LoopMode { get; set; }
         }
 
         /// <summary>
@@ -1966,9 +1985,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OSkeletalAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public List<OSkeletalAnimationBone> bone;
 
             public List<OMetaData> userData;
@@ -2035,9 +2054,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OMaterialAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public List<OMaterialAnimationData> data;
             public List<string> textureName;
 
@@ -2067,9 +2086,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OVisibilityAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public List<OVisibilityAnimationData> data;
 
             public OVisibilityAnimation()
@@ -2114,9 +2133,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OLightAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public OLightType lightType;
             public OLightUse lightUse;
             public List<OLightAnimationData> data;
@@ -2164,9 +2183,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OCameraAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public OCameraView viewMode;
             public OCameraProjection projectionMode;
             public List<OCameraAnimationData> data;
@@ -2196,9 +2215,9 @@ namespace Ohana3DS_Transfigured.Ohana
         /// </summary>
         public class OFogAnimation : OAnimationBase
         {
-            public override string name { get; set; }
-            public override float frameSize { get; set; }
-            public override OLoopMode loopMode { get; set; }
+            public override string Name { get; set; }
+            public override float FrameSize { get; set; }
+            public override OLoopMode LoopMode { get; set; }
             public List<OFogAnimationData> data;
 
             public OFogAnimation()
@@ -2275,7 +2294,7 @@ namespace Ohana3DS_Transfigured.Ohana
             ///     Merges all the content of a ModelGroup with this ModelGroup.
             /// </summary>
             /// <param name="data">The contents to be merged</param>
-            public void merge(OModelGroup data)
+            public void Merge(OModelGroup data)
             {
                 model.AddRange(data.model);
                 texture.AddRange(data.texture);

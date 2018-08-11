@@ -10,9 +10,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns>The container data</returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -20,14 +20,14 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream of the data</param>
         /// <returns>The container data</returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             OContainer output = new OContainer();
             BinaryReader input = new BinaryReader(data);
 
             output.data = data;
 
-            string garcMagic = IOUtils.readStringWithLength(input, 4);
+            string garcMagic = IOUtils.ReadStringWithLength(input, 4);
             uint garcHeaderLength = input.ReadUInt32();
             ushort endian = input.ReadUInt16();
             input.ReadUInt16(); //0x400
@@ -37,13 +37,13 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             uint compressedLength = input.ReadUInt32();
 
             //File Allocation Table Offsets
-            string fatoMagic = IOUtils.readStringWithLength(input, 4);
+            string fatoMagic = IOUtils.ReadStringWithLength(input, 4);
             uint fatoHeaderLength = input.ReadUInt32();
             ushort fatoEntries = input.ReadUInt16();
             input.ReadUInt16(); //0xffff = Padding?
             data.Seek(fatoEntries * 4, SeekOrigin.Current); //We don't need this
 
-            string fatbMagic = IOUtils.readStringWithLength(input, 4);
+            string fatbMagic = IOUtils.ReadStringWithLength(input, 4);
             uint fatbHeaderLength = input.ReadUInt32();
             uint entries = input.ReadUInt32();
 
@@ -63,15 +63,17 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                 input.Read(buffer, 0, buffer.Length);
 
                 bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
-                string extension = FileIO.getExtension(buffer, isCompressed ? 5 : 0);
+                string extension = FileIO.GetExtension(buffer, isCompressed ? 5 : 0);
                 string name = string.Format("file_{0:D5}{1}", i, extension);
 
                 //And add the file to the container list
-                OContainer.fileEntry entry = new OContainer.fileEntry();
-                entry.name = name;
-                entry.loadFromDisk = true;
-                entry.fileOffset = startOffset + dataOffset;
-                entry.fileLength = length;
+                OContainer.FileEntry entry = new OContainer.FileEntry
+                {
+                    name = name,
+                    loadFromDisk = true,
+                    fileOffset = startOffset + dataOffset,
+                    fileLength = length
+                };
                 output.content.Add(entry);
             }
 

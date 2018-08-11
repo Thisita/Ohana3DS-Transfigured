@@ -8,13 +8,13 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
 {
     public class DQVIIPack
     {
-        private struct sectionEntry
+        private struct SectionEntry
         {
             public uint offset;
             public uint length;
         }
 
-        private struct node
+        private struct Node
         {
             public string name;
             public int parentId;
@@ -26,9 +26,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns></returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -36,40 +36,40 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream of the data</param>
         /// <returns></returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
             OContainer output = new OContainer();
 
-            List<sectionEntry> mainSection = getSection(input);
+            List<SectionEntry> mainSection = GetSection(input);
 
             //World nodes section
             data.Seek(mainSection[0].offset, SeekOrigin.Begin);
-            List<node> nodes = new List<node>();
-            List<sectionEntry> worldNodesSection = getSection(input);
-            foreach (sectionEntry entry in worldNodesSection)
+            List<Node> nodes = new List<Node>();
+            List<SectionEntry> worldNodesSection = GetSection(input);
+            foreach (SectionEntry entry in worldNodesSection)
             {
                 data.Seek(entry.offset, SeekOrigin.Begin);
 
-                node n = new node();
+                Node n = new Node();
 
                 //Geometry node
                 input.ReadUInt32(); //GNOD magic number
                 input.ReadUInt32();
                 input.ReadUInt32();
                 n.parentId = input.ReadInt32();
-                n.name = IOUtils.readString(input, (uint)data.Position);
+                n.name = IOUtils.ReadString(input, (uint)data.Position);
 
                 data.Seek(entry.offset + 0x20, SeekOrigin.Begin);
                 n.transform = new RenderBase.OMatrix();
                 RenderBase.OVector4 t = new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                 RenderBase.OVector4 r = new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                 RenderBase.OVector4 s = new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                n.transform *= RenderBase.OMatrix.scale(new RenderBase.OVector3(s.x, s.y, s.z));
-                n.transform *= RenderBase.OMatrix.rotateX(r.x);
-                n.transform *= RenderBase.OMatrix.rotateY(r.y);
-                n.transform *= RenderBase.OMatrix.rotateZ(r.z);
-                n.transform *= RenderBase.OMatrix.translate(new RenderBase.OVector3(t.x, t.y, t.z));
+                n.transform *= RenderBase.OMatrix.Scale(new RenderBase.OVector3(s.x, s.y, s.z));
+                n.transform *= RenderBase.OMatrix.RotateX(r.x);
+                n.transform *= RenderBase.OMatrix.RotateY(r.y);
+                n.transform *= RenderBase.OMatrix.RotateZ(r.z);
+                n.transform *= RenderBase.OMatrix.Translate(new RenderBase.OVector3(t.x, t.y, t.z));
 
                 nodes.Add(n);
             }
@@ -78,14 +78,14 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             for (int i = 0; i < nodes.Count; i++)
             {
                 RenderBase.OMatrix transform = new RenderBase.OMatrix();
-                transformNode(nodes, i, ref transform);
+                TransformNode(nodes, i, ref transform);
                 nodesTransform[i] = transform;
             }
 
             //Models section
             data.Seek(mainSection[1].offset, SeekOrigin.Begin);
-            List<sectionEntry> modelsSection = getSection(input);
-            foreach (sectionEntry entry in modelsSection)
+            List<SectionEntry> modelsSection = GetSection(input);
+            foreach (SectionEntry entry in modelsSection)
             {
                 data.Seek(entry.offset, SeekOrigin.Begin);
                 
@@ -97,16 +97,18 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                  * 3rd entry: Another FieldData section, possibly child object
                  */
 
-                List<sectionEntry> fieldDataSection = getSection(input);
+                List<SectionEntry> fieldDataSection = GetSection(input);
                 data.Seek(fieldDataSection[0].offset, SeekOrigin.Begin);
                 uint length = fieldDataSection[0].length;
                 while ((length & 0x7f) != 0) length++; //Align
                 byte[] buffer = new byte[length];
                 input.Read(buffer, 0, buffer.Length);
 
-                OContainer.fileEntry file = new OContainer.fileEntry();
-                file.name = CGFX.getName(new MemoryStream(buffer)) + ".bcmdl";
-                file.data = buffer;
+                OContainer.FileEntry file = new OContainer.FileEntry
+                {
+                    name = CGFX.GetName(new MemoryStream(buffer)) + ".bcmdl",
+                    data = buffer
+                };
 
                 output.content.Add(file);
             }
@@ -128,9 +130,11 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             byte[] texBuffer = new byte[mainSection[5].length];
             input.Read(texBuffer, 0, texBuffer.Length);
 
-            OContainer.fileEntry texFile = new OContainer.fileEntry();
-            texFile.name = "textures.bctex";
-            texFile.data = texBuffer;
+            OContainer.FileEntry texFile = new OContainer.FileEntry
+            {
+                name = "textures.bctex",
+                data = texBuffer
+            };
 
             output.content.Add(texFile);
 
@@ -144,7 +148,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="input">BinaryReader of the data</param>
         /// <returns></returns>
-        private static List<sectionEntry> getSection(BinaryReader input)
+        private static List<SectionEntry> GetSection(BinaryReader input)
         {
             uint baseAddress = (uint)input.BaseStream.Position;
             input.BaseStream.Seek(0x10, SeekOrigin.Current); //Section magic number (padded with 0x0)
@@ -153,13 +157,14 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
             uint addressSectionLength = input.ReadUInt32();
             input.ReadUInt32(); //Padding
 
-            List<sectionEntry> sections = new List<sectionEntry>();
+            List<SectionEntry> sections = new List<SectionEntry>();
             for (int i = 0; i < addressCount; i++)
             {
-                sectionEntry entry = new sectionEntry();
-
-                entry.offset = input.ReadUInt32() + baseAddress;
-                entry.length = input.ReadUInt32();
+                SectionEntry entry = new SectionEntry
+                {
+                    offset = input.ReadUInt32() + baseAddress,
+                    length = input.ReadUInt32()
+                };
 
                 sections.Add(entry);
             }
@@ -173,10 +178,10 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// <param name="nodes">A list with all nodes</param>
         /// <param name="index">Index of the node to convert</param>
         /// <param name="target">Target matrix to save node transformation</param>
-        private static void transformNode(List<node> nodes, int index, ref RenderBase.OMatrix target)
+        private static void TransformNode(List<Node> nodes, int index, ref RenderBase.OMatrix target)
         {
             target *= nodes[index].transform;
-            if (nodes[index].parentId > -1) transformNode(nodes, nodes[index].parentId, ref target);
+            if (nodes[index].parentId > -1) TransformNode(nodes, nodes[index].parentId, ref target);
         }
     }
 }

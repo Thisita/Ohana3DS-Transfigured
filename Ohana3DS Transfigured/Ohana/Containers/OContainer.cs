@@ -5,7 +5,7 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
 {
     public class OContainer
     {
-        public struct fileEntry
+        public struct FileEntry
         {
             public string name;
             public byte[] data;
@@ -16,11 +16,11 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         }
 
         public Stream data;
-        public List<fileEntry> content;
+        public List<FileEntry> content;
 
         public OContainer()
         {
-            content = new List<fileEntry>();
+            content = new List<FileEntry>();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         const int aNode = 6;
         const int aWeight = 7;
 
-        private struct attributeEntry
+        private struct AttributeEntry
         {
             public int offset; //Offset within the vertex
             public ushort attributeLength; //ex: X/Y = 2; X/Y/Z = 3...
@@ -38,9 +38,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="fileName">File Name of the CGFX file</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
-            return load(new MemoryStream(File.ReadAllBytes(fileName)));
+            return Load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
         /// <summary>
@@ -49,15 +49,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="data">Stream of the ZMDL file.</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup load(Stream data)
+        public static RenderBase.OModelGroup Load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
 
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
-            RenderBase.OModel model = new RenderBase.OModel();
-            model.name = "model";
+            RenderBase.OModel model = new RenderBase.OModel
+            {
+                name = "model"
+            };
 
-            string zmdlMagic = IOUtils.readString(input, 0, 4);
+            string zmdlMagic = IOUtils.ReadString(input, 0, 4);
             data.Seek(0x20, SeekOrigin.Begin);
             uint materialsOffset = input.ReadUInt32();
             uint skeletonOffset = input.ReadUInt32();
@@ -71,9 +73,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             List<byte> materialObjectBinding = new List<byte>();
             for (int materialIndex = 0; materialIndex < materialsCount; materialIndex++)
             {
-                RenderBase.OMaterial material = new RenderBase.OMaterial();
-
-                material.name = IOUtils.readString(input, (uint)(materialsOffset + materialIndex * 0xb4));
+                RenderBase.OMaterial material = new RenderBase.OMaterial
+                {
+                    name = IOUtils.ReadString(input, (uint)(materialsOffset + materialIndex * 0xb4))
+                };
                 data.Seek(materialsOffset + (materialIndex * 0xb4) + 0x94, SeekOrigin.Begin);
                 uint textureReferenceOffset = input.ReadUInt32();
                 uint objectReferenceIndexOffset = input.ReadUInt32();
@@ -81,7 +84,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 data.Seek(objectReferenceIndexOffset, SeekOrigin.Begin);
                 materialObjectBinding.Add(input.ReadByte());
 
-                material.name0 = IOUtils.readString(input, textureReferenceOffset);
+                material.name0 = IOUtils.ReadString(input, textureReferenceOffset);
                 data.Seek(textureReferenceOffset + 0x40, SeekOrigin.Begin);
                 while ((data.Position & 3) != 0) input.ReadByte(); //Align Word
                 data.Seek(0x30, SeekOrigin.Current); //Unknown matrix (possibly UV transform)
@@ -97,8 +100,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             //Skeleton
             for (int boneIndex = 0; boneIndex < bonesCount; boneIndex++)
             {
-                RenderBase.OBone bone = new RenderBase.OBone();
-                bone.name = IOUtils.readString(input, (uint)(skeletonOffset + boneIndex * 0xcc));
+                RenderBase.OBone bone = new RenderBase.OBone
+                {
+                    name = IOUtils.ReadString(input, (uint)(skeletonOffset + boneIndex * 0xcc))
+                };
 
                 data.Seek(skeletonOffset + (boneIndex * 0xcc) + 0x40, SeekOrigin.Begin);
                 data.Seek(0x64, SeekOrigin.Current); //Unknow matrices, probably transform and other stuff
@@ -117,12 +122,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             //Meshes
             for (int objIndex = 0; objIndex < modelObjectsCount; objIndex++)
             {
-                RenderBase.OMesh obj = new RenderBase.OMesh();
-                obj.name = string.Format("mesh_{0}", objIndex);
+                RenderBase.OMesh obj = new RenderBase.OMesh
+                {
+                    name = string.Format("mesh_{0}", objIndex)
+                };
 
                 data.Seek(modelOffset + objIndex * 0xc4, SeekOrigin.Begin);
 
-                attributeEntry[] attributes = new attributeEntry[9];
+                AttributeEntry[] attributes = new AttributeEntry[9];
                 for (int attribute = 0; attribute < 9; attribute++)
                 {
                     attributes[attribute].floats = new RenderBase.OVector4(
@@ -172,8 +179,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     {
                         ushort index = input.ReadUInt16();
 
-                        RenderBase.OVertex vertex = new RenderBase.OVertex();
-                        vertex.diffuseColor = 0xffffffff;
+                        RenderBase.OVertex vertex = new RenderBase.OVertex
+                        {
+                            diffuseColor = 0xffffffff
+                        };
 
                         long position = data.Position;
                         long vertexOffset = vertexBufferOffset + index * vertexStride;
@@ -189,10 +198,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         if (attributes[aColor].attributeLength > 0)
                         {
                             data.Seek(vertexOffset + attributes[aColor].offset, SeekOrigin.Begin);
-                            uint r = MeshUtils.saturate(input.ReadSingle() * 0xff);
-                            uint g = MeshUtils.saturate(input.ReadSingle() * 0xff);
-                            uint b = MeshUtils.saturate(input.ReadSingle() * 0xff);
-                            uint a = MeshUtils.saturate(input.ReadSingle() * 0xff);
+                            uint r = MeshUtils.Saturate(input.ReadSingle() * 0xff);
+                            uint g = MeshUtils.Saturate(input.ReadSingle() * 0xff);
+                            uint b = MeshUtils.Saturate(input.ReadSingle() * 0xff);
+                            uint a = MeshUtils.Saturate(input.ReadSingle() * 0xff);
                             vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                         }
 
@@ -214,7 +223,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                             vertex.weight.Add(input.ReadSingle());
                         }
 
-                        MeshUtils.calculateBounds(model, vertex);
+                        MeshUtils.CalculateBounds(model, vertex);
                         obj.vertices.Add(vertex);
 
                         data.Seek(position, SeekOrigin.Begin);

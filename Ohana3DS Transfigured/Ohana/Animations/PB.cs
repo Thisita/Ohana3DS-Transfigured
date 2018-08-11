@@ -12,12 +12,12 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 {
     class PB
     {
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
-            return load(new MemoryStream(File.ReadAllBytes(fileName)));
+            return Load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
-        public static RenderBase.OModelGroup load(Stream data)
+        public static RenderBase.OModelGroup Load(Stream data)
         {
             RenderBase.OModelGroup group = new RenderBase.OModelGroup();
             RenderBase.OModelGroup tempGroup;
@@ -80,7 +80,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 
                             if (buffer[0] == 0x42 && buffer[1] == 0x43 && buffer[2] == 0x48)
                             {
-                                tempGroup = BCH.load(new MemoryStream(buffer));
+                                tempGroup = BCH.Load(new MemoryStream(buffer));
 
                                 for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
                                 {

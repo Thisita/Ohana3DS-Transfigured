@@ -10,9 +10,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns></returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -21,16 +21,16 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream with container data</param>
         /// <returns></returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
             OContainer output = new OContainer();
 
-            IOUtils.readString(input, 0, 2); //Magic
+            IOUtils.ReadString(input, 0, 2); //Magic
             ushort sectionCount = input.ReadUInt16();
             for (int i = 0; i < sectionCount; i++)
             {
-                OContainer.fileEntry entry = new OContainer.fileEntry();
+                OContainer.FileEntry entry = new OContainer.FileEntry();
 
                 data.Seek(4 + (i * 4), SeekOrigin.Begin);
                 uint startOffset = input.ReadUInt32();

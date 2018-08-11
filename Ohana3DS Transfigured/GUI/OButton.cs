@@ -82,8 +82,8 @@ namespace Ohana3DS_Transfigured.GUI
             pevent.Graphics.DrawLine(new Pen(Color.FromArgb(64, Color.Black)), bx, 1, bx, by);
 
             string text = null;
-            if (Text.Length > 0) text = DrawingUtils.clampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0) - 2);
-            SizeF textSize = DrawingUtils.measureText(pevent.Graphics, text, Font);
+            if (Text.Length > 0) text = DrawingUtils.ClampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0) - 2);
+            SizeF textSize = DrawingUtils.MeasureText(pevent.Graphics, text, Font);
             int width = (int)textSize.Width;
             int yImage = 0;
             if (img != null)

@@ -10,9 +10,9 @@ namespace Ohana3DS_Transfigured.GUI
     public partial class OAnimationsPanel : UserControl, IPanel
     {
         private RenderEngine renderer;
-        private RenderEngine.animationControl control;
+        private RenderEngine.AnimationControl control;
         private RenderBase.OAnimationListBase animations;
-        private FileIO.fileType type;
+        private FileIO.FileType type;
 
         private bool paused = true;
         private bool isAnimationLoaded;
@@ -22,7 +22,7 @@ namespace Ohana3DS_Transfigured.GUI
             InitializeComponent();
         }
 
-        public void launch(object data)
+        public void Launch(object data)
         {
             RenderBase.OModelGroup group = (RenderBase.OModelGroup)data;
             animations = new RenderBase.OAnimationListBase();
@@ -42,48 +42,48 @@ namespace Ohana3DS_Transfigured.GUI
                 animations.list.Add(vAnim);
             }
 
-            updateList();
+            UpdateList();
         }
 
-        public void finalize()
+        public void Clear()
         {
-            AnimationsList.flush();
+            AnimationsList.Flush();
         }
 
-        public void launch(RenderEngine renderEngine, FileIO.fileType type)
+        public void Launch(RenderEngine renderEngine, FileIO.FileType type)
         {
             renderer = renderEngine;
             this.type = type;
             switch (type)
             {
-                case FileIO.fileType.skeletalAnimation:
+                case FileIO.FileType.skeletalAnimation:
                     control = renderer.ctrlSA;
                     animations = renderer.models.skeletalAnimation;
                     break;
-                case FileIO.fileType.materialAnimation:
+                case FileIO.FileType.materialAnimation:
                     control = renderer.ctrlMA;
                     animations = renderer.models.materialAnimation;
                     break;
-                case FileIO.fileType.visibilityAnimation:
+                case FileIO.FileType.visibilityAnimation:
                     control = renderer.ctrlVA;
                     animations = renderer.models.visibilityAnimation;
                     break;
             }
             
             control.FrameChanged += Control_FrameChanged;
-            updateList();
+            UpdateList();
         }
 
-        private void updateList()
+        private void UpdateList()
         {
-            AnimationsList.flush();
+            AnimationsList.Flush();
             if (control != null)
             {
-                control.load(-1);
+                control.Load(-1);
 
                 foreach (RenderBase.OAnimationBase animation in animations.list)
                 {
-                    AnimationsList.addItem(animation.name);
+                    AnimationsList.AddItem(animation.Name);
                 }
             }
             AnimationsList.Refresh();
@@ -106,13 +106,13 @@ namespace Ohana3DS_Transfigured.GUI
             {
                 BtnPlayPause.Image = Properties.Resources.ui_icon_pause;
                 paused = false;
-                control.play();
+                control.Play();
             }
             else
             {
                 BtnPlayPause.Image = Properties.Resources.ui_icon_play;
                 paused = true;
-                control.pause();
+                control.Pause();
             }
         }
 
@@ -120,7 +120,7 @@ namespace Ohana3DS_Transfigured.GUI
         {
             if (e.Button != MouseButtons.Left) return;
             BtnPlayPause.Image = Properties.Resources.ui_icon_play;
-            control.stop();
+            control.Stop();
             paused = true;
         }
 
@@ -129,7 +129,7 @@ namespace Ohana3DS_Transfigured.GUI
             if (e.Button != MouseButtons.Left) return;
             if (control.CurrentAnimation > 0)
             {
-                control.load(control.CurrentAnimation - 1);
+                control.Load(control.CurrentAnimation - 1);
                 AnimationsList.SelectedIndex--;
             }
         }
@@ -139,7 +139,7 @@ namespace Ohana3DS_Transfigured.GUI
             if (e.Button != MouseButtons.Left) return;
             if (control.CurrentAnimation < animations.list.Count - 1)
             {
-                control.load(control.CurrentAnimation + 1);
+                control.Load(control.CurrentAnimation + 1);
                 AnimationsList.SelectedIndex++;
             }
         }
@@ -152,8 +152,8 @@ namespace Ohana3DS_Transfigured.GUI
         private void AnimationsList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (AnimationsList.SelectedIndex == -1) return;
-            isAnimationLoaded = control.load(AnimationsList.SelectedIndex);
-            Seeker.MaximumSeek = (int)animations.list[AnimationsList.SelectedIndex].frameSize;
+            isAnimationLoaded = control.Load(AnimationsList.SelectedIndex);
+            Seeker.MaximumSeek = (int)animations.list[AnimationsList.SelectedIndex].FrameSize;
             Seeker.Value = 0;
         }
 
@@ -164,12 +164,12 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void Seeker_SeekStart(object sender, EventArgs e)
         {
-            control.pause();
+            control.Pause();
         }
 
         private void Seeker_SeekEnd(object sender, EventArgs e)
         {
-            if (!paused) control.play();
+            if (!paused) control.Play();
         }
 
         private void Speed_Seek(object sender, EventArgs e)
@@ -179,11 +179,11 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void BtnImport_Click(object sender, EventArgs e)
         {
-            RenderBase.OAnimationListBase animation = (RenderBase.OAnimationListBase)FileIO.import(type);
+            RenderBase.OAnimationListBase animation = (RenderBase.OAnimationListBase)FileIO.Import(type);
             if (animation != null)
             {
                 animations.list.AddRange(animation.list);
-                foreach (RenderBase.OAnimationBase anim in animation.list) AnimationsList.addItem(anim.name);
+                foreach (RenderBase.OAnimationBase anim in animation.list) AnimationsList.AddItem(anim.Name);
                 AnimationsList.Refresh();
             }
         }
@@ -192,7 +192,7 @@ namespace Ohana3DS_Transfigured.GUI
         {
             switch (type)
             {
-                case FileIO.fileType.skeletalAnimation:
+                case FileIO.FileType.skeletalAnimation:
                     if (renderer.CurrentModel == -1)
                     {
                         MessageBox.Show(
@@ -204,7 +204,7 @@ namespace Ohana3DS_Transfigured.GUI
                         return;
                     }
                     if (control.CurrentAnimation == -1) return;
-                    FileIO.export(type, renderer.models, renderer.CurrentModel, control.CurrentAnimation);
+                    FileIO.Export(type, renderer.models, renderer.CurrentModel, control.CurrentAnimation);
                     break;
             }
         }
@@ -213,10 +213,10 @@ namespace Ohana3DS_Transfigured.GUI
         {
             if (AnimationsList.SelectedIndex == -1) return;
             animations.list.RemoveAt(AnimationsList.SelectedIndex);
-            AnimationsList.removeItem(AnimationsList.SelectedIndex);
+            AnimationsList.RemoveItem(AnimationsList.SelectedIndex);
             if (animations.list.Count == 0)
             {
-                control.stop();
+                control.Stop();
                 isAnimationLoaded = false;
                 BtnPlayPause.Image = Properties.Resources.ui_icon_play;
                 paused = true;
@@ -225,13 +225,13 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void BtnClear_Click(object sender, EventArgs e)
         {
-            control.stop();
+            control.Stop();
             isAnimationLoaded = false;
             BtnPlayPause.Image = Properties.Resources.ui_icon_play;
             paused = true;
 
             animations.list.Clear();
-            updateList();
+            UpdateList();
         }
     }
 }

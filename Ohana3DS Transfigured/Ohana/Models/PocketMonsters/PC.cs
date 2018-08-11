@@ -6,9 +6,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
 {
     class PC
     {
-        public static RenderBase.OModelGroup load(string file)
+        public static RenderBase.OModelGroup Load(string file)
         {
-            RenderBase.OModelGroup group = load(File.Open(file, FileMode.Open));
+            RenderBase.OModelGroup group = Load(File.Open(file, FileMode.Open));
 
             return group;
         }
@@ -18,13 +18,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
         /// </summary>
         /// <param name="data">The data</param>
         /// <returns>The Model group with the monster meshes</returns>
-        public static RenderBase.OModelGroup load(Stream data)
+        public static RenderBase.OModelGroup Load(Stream data)
         {
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
-            OContainer container = PkmnContainer.load(data);
+            OContainer container = PkmnContainer.Load(data);
 
-            models = BCH.load(new MemoryStream(container.content[0].data));
+            models = BCH.Load(new MemoryStream(container.content[0].data));
 
             return models;
         }

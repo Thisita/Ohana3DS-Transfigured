@@ -17,41 +17,41 @@ namespace Ohana3DS_Transfigured.GUI
         public event EventHandler SelectedIndexChanged;
         private int oldIndex = -1;
 
-        public class listItem
+        public class ListItem
         {
             public Bitmap thumbnail;
             public string text;
 
-            public listItem(string _text, Bitmap _thumbnail = null)
+            public ListItem(string _text, Bitmap _thumbnail = null)
             {
                 text = _text;
                 thumbnail = _thumbnail;
             }
         }
 
-        public class listItemGroup
+        public class ListItemGroup
         {
-            public List<listItem> columns;
-            public listItemGroup()
+            public List<ListItem> columns;
+            public ListItemGroup()
             {
-                columns = new List<listItem>();
+                columns = new List<ListItem>();
             }
         }
 
-        public class columnHeader
+        public class ColumnHeader
         {
             public int width;
             public string text;
 
-            public columnHeader(int _width, string _text)
+            public ColumnHeader(int _width, string _text)
             {
                 width = _width;
                 text = _text;
             }
         }
 
-        List<listItemGroup> list = new List<listItemGroup>();
-        List<columnHeader> columns = new List<columnHeader>();
+        List<ListItemGroup> list = new List<ListItemGroup>();
+        List<ColumnHeader> columns = new List<ColumnHeader>();
 
         int selectedIndex = -1;
         private bool showHeader = false;
@@ -111,7 +111,7 @@ namespace Ohana3DS_Transfigured.GUI
                     selectedIndex = value;
                     if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
                     oldIndex = selectedIndex;
-                    if (selectedIndex > -1) updateScroll(); else Refresh();
+                    if (selectedIndex > -1) UpdateScroll(); else Refresh();
                 }
             }
         }
@@ -131,39 +131,39 @@ namespace Ohana3DS_Transfigured.GUI
         ///     Adds a item to the list. At least one column is necessary.
         /// </summary>
         /// <param name="item">The item with one or more columns</param>
-        public void addItem(listItemGroup item)
+        public void AddItem(ListItemGroup item)
         {
             list.Add(item);
-            recalcScroll();
+            RecalcScroll();
         }
 
         /// <summary>
         ///     Adds a item to the list.
         /// </summary>
         /// <param name="item"></param>
-        public void addItem(listItem item)
+        public void AddItem(ListItem item)
         {
-            listItemGroup newItem = new listItemGroup();
+            ListItemGroup newItem = new ListItemGroup();
             newItem.columns.Add(item);
-            addItem(newItem);
+            AddItem(newItem);
         }
 
         /// <summary>
         ///     Adds a text to the list.
         /// </summary>
         /// <param name="text"></param>
-        public void addItem(string text)
+        public void AddItem(string text)
         {
-            listItemGroup newItem = new listItemGroup();
-            newItem.columns.Add(new listItem(text));
-            addItem(newItem);
+            ListItemGroup newItem = new ListItemGroup();
+            newItem.columns.Add(new ListItem(text));
+            AddItem(newItem);
         }
 
         /// <summary>
         ///     Adds a Collection of listItemGroup to the list.
         /// </summary>
         /// <param name="itemList">The Collection</param>
-        public void addRange(IEnumerable<listItemGroup> itemList)
+        public void AddRange(IEnumerable<ListItemGroup> itemList)
         {
             list.AddRange(itemList);
         }
@@ -172,25 +172,25 @@ namespace Ohana3DS_Transfigured.GUI
         ///     Adds a Array of listItem to the list.
         /// </summary>
         /// <param name="itemList">The Array</param>
-        public void addRange(listItem[] itemList)
+        public void AddRange(ListItem[] itemList)
         {
-            foreach (listItem item in itemList) addItem(item);
+            foreach (ListItem item in itemList) AddItem(item);
         }
 
         /// <summary>
         ///     Adds a Array of String to the list.
         /// </summary>
         /// <param name="itemList">The Array</param>
-        public void addRange(string[] itemList)
+        public void AddRange(string[] itemList)
         {
-            foreach (string item in itemList) addItem(item);
+            foreach (string item in itemList) AddItem(item);
         }
 
         /// <summary>
         ///     Adds a new column to the list.
         /// </summary>
         /// <param name="column"></param>
-        public void addColumn(columnHeader column)
+        public void AddColumn(ColumnHeader column)
         {
             columns.Add(column);
             showHeader = true;
@@ -200,15 +200,15 @@ namespace Ohana3DS_Transfigured.GUI
         ///     Removes the item at given index.
         /// </summary>
         /// <param name="index">Item index</param>
-        public void removeItem(int index)
+        public void RemoveItem(int index)
         {
             if (index >= list.Count || index < 0) return;
             if (selectedIndex == list.Count - 1) selectedIndex--;
-            foreach (listItem subItem in list[index].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
+            foreach (ListItem subItem in list[index].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
             list.RemoveAt(index);
-            recalcScroll();
-            updateScroll();
-            if (SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+            RecalcScroll();
+            UpdateScroll();
+            SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
             oldIndex = selectedIndex;
         }
 
@@ -217,10 +217,10 @@ namespace Ohana3DS_Transfigured.GUI
         /// </summary>
         /// <param name="index">Index number of the item</param>
         /// <param name="newText">New text</param>
-        public void changeItem(int index, string newText)
+        public void ChangeItem(int index, string newText)
         {
             if (index >= list.Count || index < 0) return;
-            listItemGroup item = list[index];
+            ListItemGroup item = list[index];
             list.RemoveAt(index);
             item.columns[0].text = newText;
             list.Insert(index, item);
@@ -232,7 +232,7 @@ namespace Ohana3DS_Transfigured.GUI
         /// </summary>
         /// <param name="index">Index number of the item</param>
         /// <param name="newText">New item</param>
-        public void changeItem(int index, listItemGroup newItem)
+        public void ChangeItem(int index, ListItemGroup newItem)
         {
             if (index >= list.Count || index < 0) return;
             list.RemoveAt(index);
@@ -245,7 +245,7 @@ namespace Ohana3DS_Transfigured.GUI
         /// </summary>
         /// <param name="index">Index where the item is located</param>
         /// <returns></returns>
-        public string itemAt(int index)
+        public string ItemAt(int index)
         {
             if (index >= list.Count || index < 0) return null;
             return list[index].columns[0].text;
@@ -255,11 +255,11 @@ namespace Ohana3DS_Transfigured.GUI
         ///     Erase the list.
         /// </summary>
         /// <param name="keepColumns">Set to true to keep the columns (optional, default = false)</param>
-        public void flush(bool keepColumns = false)
+        public void Flush(bool keepColumns = false)
         {
             for (int i = 0; i < list.Count; i++)
             {
-                foreach (listItem subItem in list[i].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
+                foreach (ListItem subItem in list[i].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
             }
 
             list.Clear();
@@ -270,11 +270,11 @@ namespace Ohana3DS_Transfigured.GUI
             }
             selectedIndex = -1;
             oldIndex = -1;
-            recalcScroll();
+            RecalcScroll();
             Refresh();
         }
 
-        private void recalcScroll()
+        private void RecalcScroll()
         {
             int totalSize = (list.Count * tileSize) + (showHeader ? headerSize : 0);
             if (totalSize > Height)
@@ -302,7 +302,7 @@ namespace Ohana3DS_Transfigured.GUI
             {
                 int columnX = 0;
 
-                foreach (columnHeader header in columns)
+                foreach (ColumnHeader header in columns)
                 {
                     int columnWidth;
                     if (i == columns.Count - 1) columnWidth = Width - columnX; else columnWidth = header.width;
@@ -313,7 +313,7 @@ namespace Ohana3DS_Transfigured.GUI
 
                     Font font = new Font(Font.FontFamily, Font.Size, FontStyle.Bold);
                     int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
-                    string text = DrawingUtils.clampText(e.Graphics, header.text, font, columnWidth);
+                    string text = DrawingUtils.ClampText(e.Graphics, header.text, font, columnWidth);
                     Point textLocation = new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2)));
                     e.Graphics.DrawString(text, font, new SolidBrush(ForeColor), textLocation);
                     font.Dispose();
@@ -328,7 +328,7 @@ namespace Ohana3DS_Transfigured.GUI
             //Renderiza os itens da lista
             for (int j = 0; j < list.Count; j++)
             {
-                listItemGroup item = list[j];
+                ListItemGroup item = list[j];
 
                 if (startY >= -tileSize)
                 {
@@ -356,7 +356,7 @@ namespace Ohana3DS_Transfigured.GUI
                     //Textos e afins
                     i = 0;
                     int x = 0;
-                    foreach (listItem subItem in item.columns)
+                    foreach (ListItem subItem in item.columns)
                     {
                         int columnWidth;
                         if (i == columns.Count - 1 || columns.Count == 0)
@@ -382,7 +382,7 @@ namespace Ohana3DS_Transfigured.GUI
                         }
 
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, Font).Height;
-                        string text = DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth);
+                        string text = DrawingUtils.ClampText(e.Graphics, subItem.text, Font, columnWidth);
                         Point textLocation = new Point(x, startY + ((tileSize / 2) - (textHeight / 2)));
                         e.Graphics.DrawString(text, Font, new SolidBrush(ForeColor), textLocation);
 
@@ -435,7 +435,7 @@ namespace Ohana3DS_Transfigured.GUI
 
         protected override void OnLayout(LayoutEventArgs e)
         {
-            recalcScroll();
+            RecalcScroll();
             Refresh();
 
             base.OnLayout(e);
@@ -451,7 +451,7 @@ namespace Ohana3DS_Transfigured.GUI
 
             if (keyData == Keys.Up || keyData == Keys.Down)
             {
-                updateScroll();
+                UpdateScroll();
                 if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
                 oldIndex = selectedIndex;
                 return true;
@@ -460,7 +460,7 @@ namespace Ohana3DS_Transfigured.GUI
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void updateScroll()
+        private void UpdateScroll()
         {
             int header = showHeader ? headerSize : 0;
             int totalSize = (list.Count * tileSize) + header;

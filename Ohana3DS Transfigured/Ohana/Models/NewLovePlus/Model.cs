@@ -10,24 +10,26 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
 {
     class Model
     {
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
             string basePath = Path.GetDirectoryName(fileName);
             FileStream input = new FileStream(fileName, FileMode.Open);
-            Serialization.SERI mdl = Serialization.getSERI(input);
+            Serialization.SERI mdl = Serialization.GetSERI(input);
             input.Close();
 
-            string skeletonFileName = Path.Combine(basePath, mdl.getStringParameter("bone"));
-            string meshFileName = Path.Combine(basePath, mdl.getStringParameter("smes"));
-            string materialFileName = Path.Combine(basePath, mdl.getStringParameter("smat"));
-            string[] textureNames = mdl.getStringArrayParameter("texi");
+            string skeletonFileName = Path.Combine(basePath, mdl.GetStringParameter("bone"));
+            string meshFileName = Path.Combine(basePath, mdl.GetStringParameter("smes"));
+            string materialFileName = Path.Combine(basePath, mdl.GetStringParameter("smat"));
+            string[] textureNames = mdl.GetStringArrayParameter("texi");
 
             if (File.Exists(meshFileName))
             {
-                RenderBase.OModel model = new RenderBase.OModel();
-                model.name = Path.GetFileNameWithoutExtension(meshFileName);
+                RenderBase.OModel model = new RenderBase.OModel
+                {
+                    name = Path.GetFileNameWithoutExtension(meshFileName)
+                };
 
                 if (File.Exists(skeletonFileName))
                 {
@@ -35,7 +37,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                     {
                         BinaryReader bone = new BinaryReader(data);
 
-                        string boneMagic = IOUtils.readStringWithLength(bone, 4);
+                        string boneMagic = IOUtils.ReadStringWithLength(bone, 4);
                         uint bonesCount = bone.ReadUInt32();
                         uint unknownTableOffset = bone.ReadUInt32();
                         uint parentTableOffset = bone.ReadUInt32();
@@ -43,8 +45,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
 
                         for (int i = 0; i < bonesCount; i++)
                         {
-                            RenderBase.OBone b = new RenderBase.OBone();
-                            b.name = "bone_" + i;
+                            RenderBase.OBone b = new RenderBase.OBone
+                            {
+                                name = "bone_" + i
+                            };
 
                             data.Seek(parentTableOffset + i * 4, SeekOrigin.Begin);
                             b.parentId = (short)bone.ReadInt32();
@@ -60,7 +64,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                     }
                 }
 
-                Mesh.load(meshFileName, model);
+                Mesh.Load(meshFileName, model);
 
                 if (File.Exists(materialFileName))
                 {
@@ -68,12 +72,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                     {
                         BinaryReader smat = new BinaryReader(data);
 
-                        string smatMagic = IOUtils.readStringWithLength(smat, 4);
+                        string smatMagic = IOUtils.ReadStringWithLength(smat, 4);
                         uint materialsCount = smat.ReadUInt32();
                         for (int mtl = 0; mtl < materialsCount; mtl++)
                         {
-                            RenderBase.OMaterial material = new RenderBase.OMaterial();
-                            material.name = "material_" + mtl;
+                            RenderBase.OMaterial material = new RenderBase.OMaterial
+                            {
+                                name = "material_" + mtl
+                            };
 
                             data.Seek(8 + mtl * 4, SeekOrigin.Begin);
                             data.Seek(smat.ReadUInt32(), SeekOrigin.Begin);
@@ -81,7 +87,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                             bool hasData = true;
                             while (hasData)
                             {
-                                string magic = IOUtils.readStringWithLength(smat, 4);
+                                string magic = IOUtils.ReadStringWithLength(smat, 4);
                                 uint sectionLength = smat.ReadUInt32();
                                 long startOffset = data.Position;
 
@@ -89,17 +95,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                                 {
                                     case "STAT": break; //Stencil Test and Alpha Test
                                     case "MATC": //Material Color
-                                        material.materialColor.emission = MeshUtils.getColor(smat);
-                                        material.materialColor.ambient = MeshUtils.getColor(smat);
-                                        material.materialColor.diffuse = MeshUtils.getColor(smat);
-                                        material.materialColor.specular0 = MeshUtils.getColor(smat);
-                                        material.materialColor.specular1 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant0 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant1 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant2 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant3 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant4 = MeshUtils.getColor(smat);
-                                        material.materialColor.constant5 = MeshUtils.getColor(smat);
+                                        material.materialColor.emission = MeshUtils.GetColor(smat);
+                                        material.materialColor.ambient = MeshUtils.GetColor(smat);
+                                        material.materialColor.diffuse = MeshUtils.GetColor(smat);
+                                        material.materialColor.specular0 = MeshUtils.GetColor(smat);
+                                        material.materialColor.specular1 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant0 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant1 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant2 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant3 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant4 = MeshUtils.GetColor(smat);
+                                        material.materialColor.constant5 = MeshUtils.GetColor(smat);
                                         break;
                                     case "TEXU": //Texture Unit
                                         uint unitsCount = smat.ReadUInt32();
@@ -113,7 +119,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                                                 case 2: material.name2 = name; break;
                                             }
 
-                                            material.textureMapper[unit].borderColor = MeshUtils.getColor(smat);
+                                            material.textureMapper[unit].borderColor = MeshUtils.GetColor(smat);
                                             material.textureMapper[unit].minFilter = (RenderBase.OTextureMinFilter)smat.ReadByte();
                                             material.textureMapper[unit].magFilter = (RenderBase.OTextureMagFilter)smat.ReadByte();
                                             material.textureMapper[unit].wrapU = (RenderBase.OTextureWrap)smat.ReadByte();
@@ -144,24 +150,24 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                 {
                     string fullTextureName = Path.Combine(basePath, textureName);
                     string descriptorName = fullTextureName + ".xml";
-                    models.texture.Add(loadTexture(descriptorName));
+                    models.texture.Add(LoadTexture(descriptorName));
                 }
             }
 
             return models;
         }
 
-        public static RenderBase.OTexture loadTexture(string fileName)
+        public static RenderBase.OTexture LoadTexture(string fileName)
         {
             if (File.Exists(fileName))
             {
-                Serialization.SERI tex = Serialization.getSERI(fileName);
+                Serialization.SERI tex = Serialization.GetSERI(fileName);
 
-                int width = tex.getIntegerParameter("w");
-                int height = tex.getIntegerParameter("h");
-                int mipmap = tex.getIntegerParameter("mipmap");
-                int format = tex.getIntegerParameter("format");
-                string textureName = tex.getStringParameter("tex");
+                int width = tex.GetIntegerParameter("w");
+                int height = tex.GetIntegerParameter("h");
+                int mipmap = tex.GetIntegerParameter("mipmap");
+                int format = tex.GetIntegerParameter("format");
+                string textureName = tex.GetStringParameter("tex");
                 string fullTextureName = Path.Combine(Path.GetDirectoryName(fileName), textureName);
 
                 if (File.Exists(fullTextureName))
@@ -183,7 +189,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
 
                     string name = Path.GetFileNameWithoutExtension(textureName);
                     byte[] buffer = File.ReadAllBytes(fullTextureName);
-                    return new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, fmt), name);
+                    return new RenderBase.OTexture(TextureCodec.Decode(buffer, width, height, fmt), name);
                 }
             }
 

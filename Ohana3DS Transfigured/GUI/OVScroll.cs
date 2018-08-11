@@ -24,11 +24,11 @@ namespace Ohana3DS_Transfigured.GUI
 
         public OVScroll()
         {
-            init();
+            Init();
             InitializeComponent();
         }
 
-        private void init()
+        private void Init()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.UserPaint, true);
@@ -94,7 +94,7 @@ namespace Ohana3DS_Transfigured.GUI
             {
                 if (value < 1) throw new Exception("OVScroll: Maximum value MUST be greater than 0!");
                 max = value;
-                recalcSize();
+                RecalcSize();
                 if (scrollY > value)
                 {
                     scrollY = value;
@@ -181,7 +181,7 @@ namespace Ohana3DS_Transfigured.GUI
                     scrollBarY = y;
 
                     scrollY = (int)(((float)y / Math.Max(Height - scrollBarSize, 1)) * max);
-                    if (ScrollChanged != null) ScrollChanged(this, EventArgs.Empty);
+                    ScrollChanged?.Invoke(this, EventArgs.Empty);
                     Refresh();
                 }
             }
@@ -198,12 +198,12 @@ namespace Ohana3DS_Transfigured.GUI
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
-            recalcSize();
+            RecalcSize();
 
             base.OnLayout(levent);
         }
 
-        private void recalcSize()
+        private void RecalcSize()
         {
             scrollBarSize = Math.Max(Height - max, 32);
             scrollBarY = (int)(((float)scrollY / max) * (Height - scrollBarSize));

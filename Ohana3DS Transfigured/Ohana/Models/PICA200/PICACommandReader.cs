@@ -7,14 +7,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
 {
     class PICACommandReader
     {
-        List<float>[] floatUniform = new List<float>[96];
+        readonly List<float>[] floatUniform = new List<float>[96];
         List<float> uniform = new List<float>();
+        readonly float[] lookUpTable = new float[256];
+        readonly uint lutIndex;
 
-        float[] lookUpTable = new float[256];
-        uint lutIndex;
-
-        private uint[] commands = new uint[0x10000];
-        uint currentUniform;
+        private readonly uint[] commands = new uint[0x10000];
+        readonly uint currentUniform;
 
         /// <summary>
         ///     Creates a new PICA200 Command Buffer reader and reads the content.
@@ -38,18 +37,18 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
                 uint extraParameters = (header >> 20) & 0x7ff;
                 bool consecutiveWriting = (header & 0x80000000) > 0;
 
-                commands[id] = (getParameter(id) & (~mask & 0xf)) | (parameter & (0xfffffff0 | mask));
+                commands[id] = (GetParameter(id) & (~mask & 0xf)) | (parameter & (0xfffffff0 | mask));
                 if (id == PICACommand.blockEnd) break;
                 else if (id == PICACommand.vertexShaderFloatUniformConfig) currentUniform = parameter & 0x7fffffff;
-                else if (id == PICACommand.vertexShaderFloatUniformData) uniform.Add(toFloat(commands[id]));
+                else if (id == PICACommand.vertexShaderFloatUniformData) uniform.Add(ToFloat(commands[id]));
                 else if (id == PICACommand.fragmentShaderLookUpTableData) lookUpTable[lutIndex++] = commands[id];
                 for (int i = 0; i < extraParameters; i++)
                 {
                     if (consecutiveWriting) id++;
-                    commands[id] = (getParameter(id) & (~mask & 0xf)) | (reader.ReadUInt32() & (0xfffffff0 | mask));
+                    commands[id] = (GetParameter(id) & (~mask & 0xf)) | (reader.ReadUInt32() & (0xfffffff0 | mask));
                     readedWords++;
 
-                    if (id > PICACommand.vertexShaderFloatUniformConfig && id < PICACommand.vertexShaderFloatUniformData + 8) uniform.Add(toFloat(commands[id]));
+                    if (id > PICACommand.vertexShaderFloatUniformConfig && id < PICACommand.vertexShaderFloatUniformData + 8) uniform.Add(ToFloat(commands[id]));
                     else if (id == PICACommand.fragmentShaderLookUpTableData) lookUpTable[lutIndex++] = commands[id];
                 }
 
@@ -70,7 +69,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="commandId">ID code of the command</param>
         /// <returns></returns>
-        public uint getParameter(ushort commandId)
+        public uint GetParameter(ushort commandId)
         {
             return commands[commandId];
         }
@@ -80,7 +79,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private float toFloat(uint value)
+        private float ToFloat(uint value)
         {
             byte[] buffer = new byte[4];
             buffer[0] = (byte)(value & 0xff);
@@ -94,24 +93,24 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Total Attributes minus 1.
         /// </summary>
         /// <returns></returns>
-        public uint getVSHTotalAttributes()
+        public uint GetVSHTotalAttributes()
         {
-            return getParameter(PICACommand.vertexShaderTotalAttributes);
+            return GetParameter(PICACommand.vertexShaderTotalAttributes);
         }
 
         /// <summary>
         ///     Gets an array containing all Vertex Atrributes permutation order.
         /// </summary>
         /// <returns></returns>
-        public PICACommand.vshAttribute[] getVSHAttributesBufferPermutation()
+        public PICACommand.VshAttribute[] GetVSHAttributesBufferPermutation()
         {
-            ulong permutation = getParameter(PICACommand.vertexShaderAttributesPermutationLow);
-            permutation |= getParameter(PICACommand.vertexShaderAttributesPermutationHigh) << 32;
+            ulong permutation = GetParameter(PICACommand.vertexShaderAttributesPermutationLow);
+            permutation |= GetParameter(PICACommand.vertexShaderAttributesPermutationHigh) << 32;
 
-            PICACommand.vshAttribute[] attributes = new PICACommand.vshAttribute[23];
+            PICACommand.VshAttribute[] attributes = new PICACommand.VshAttribute[23];
             for (int attribute = 0; attribute < attributes.Length; attribute++)
             {
-                attributes[attribute] = (PICACommand.vshAttribute)((permutation >> (attribute * 4)) & 0xf);
+                attributes[attribute] = (PICACommand.VshAttribute)((permutation >> (attribute * 4)) & 0xf);
             }
             return attributes;
         }
@@ -122,9 +121,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Note that it may be a Relative address, and may need to be relocated.
         /// </summary>
         /// <returns></returns>
-        public uint getVSHAttributesBufferAddress()
+        public uint GetVSHAttributesBufferAddress()
         {
-            return getParameter(PICACommand.vertexShaderAttributesBufferAddress);
+            return GetParameter(PICACommand.vertexShaderAttributesBufferAddress);
         }
 
         /// <summary>
@@ -132,16 +131,16 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     It have the length of each attribute, and the format (byte, float, short...).
         /// </summary>
         /// <returns></returns>
-        public PICACommand.attributeFormat[] getVSHAttributesBufferFormat()
+        public PICACommand.AttributeFormat[] GetVSHAttributesBufferFormat()
         {
-            ulong format = getParameter(PICACommand.vertexShaderAttributesBufferFormatLow);
-            format |= getParameter(PICACommand.vertexShaderAttributesBufferFormatHigh) << 32;
+            ulong format = GetParameter(PICACommand.vertexShaderAttributesBufferFormatLow);
+            format |= GetParameter(PICACommand.vertexShaderAttributesBufferFormatHigh) << 32;
 
-            PICACommand.attributeFormat[] formats = new PICACommand.attributeFormat[23];
+            PICACommand.AttributeFormat[] formats = new PICACommand.AttributeFormat[23];
             for (int attribute = 0; attribute < formats.Length; attribute++)
             {
                 byte value = (byte)((format >> (attribute * 4)) & 0xf);
-                formats[attribute].type = (PICACommand.attributeFormatType)(value & 3);
+                formats[attribute].type = (PICACommand.AttributeFormatType)(value & 3);
                 formats[attribute].attributeLength = (uint)(value >> 2);
             }
             return formats;
@@ -153,9 +152,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="bufferIndex">Index number of the buffer (0-11)</param>
         /// <returns></returns>
-        public uint getVSHAttributesBufferAddress(byte bufferIndex)
+        public uint GetVSHAttributesBufferAddress(byte bufferIndex)
         {
-            return getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Address + (bufferIndex * 3)));
+            return GetParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Address + (bufferIndex * 3)));
         }
 
         /// <summary>
@@ -163,9 +162,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="bufferIndex">Index number of the buffer (0-11)</param>
         /// <returns></returns>
-        public uint getVSHTotalAttributes(byte bufferIndex)
+        public uint GetVSHTotalAttributes(byte bufferIndex)
         {
-            uint value = getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3)));
+            uint value = GetParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3)));
             return value >> 28;
         }
 
@@ -173,11 +172,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets Uniform Booleans used on Vertex Shader.
         /// </summary>
         /// <returns></returns>
-        public bool[] getVSHBooleanUniforms()
+        public bool[] GetVSHBooleanUniforms()
         {
             bool[] output = new bool[16];
 
-            uint value = getParameter((ushort)PICACommand.vertexShaderBooleanUniforms);
+            uint value = GetParameter((ushort)PICACommand.vertexShaderBooleanUniforms);
             for (int i = 0; i < 16; i++) output[i] = (value & (1 << i)) > 0;
             return output;
         }
@@ -188,10 +187,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="bufferIndex">Index number of the buffer (0-11)</param>
         /// <returns></returns>
-        public uint[] getVSHAttributesBufferPermutation(byte bufferIndex)
+        public uint[] GetVSHAttributesBufferPermutation(byte bufferIndex)
         {
-            ulong permutation = getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Permutation + (bufferIndex * 3)));
-            permutation |= (getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3))) & 0xffff) << 32;
+            ulong permutation = GetParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Permutation + (bufferIndex * 3)));
+            permutation |= (GetParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3))) & 0xffff) << 32;
 
             uint[] attributes = new uint[23];
             for (int attribute = 0; attribute < attributes.Length; attribute++)
@@ -206,9 +205,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="bufferIndex">Index number of the buffer (0-11)</param>
         /// <returns></returns>
-        public byte getVSHAttributesBufferStride(byte bufferIndex)
+        public byte GetVSHAttributesBufferStride(byte bufferIndex)
         {
-            uint value = getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3)));
+            uint value = GetParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3)));
             return (byte)((value >> 16) & 0xff);
         }
 
@@ -217,7 +216,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="register">Index number of the register (observed values: 6 and 7)</param>
         /// <returns></returns>
-        public Stack<float> getVSHFloatUniformData(uint register)
+        public Stack<float> GetVSHFloatUniformData(uint register)
         {
             Stack<float> data = new Stack<float>();
             foreach (float value in floatUniform[register]) data.Push(value);
@@ -228,27 +227,27 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Address where the Index Buffer is located.
         /// </summary>
         /// <returns></returns>
-        public uint getIndexBufferAddress()
+        public uint GetIndexBufferAddress()
         {
-            return getParameter(PICACommand.indexBufferConfig) & 0x7fffffff;
+            return GetParameter(PICACommand.indexBufferConfig) & 0x7fffffff;
         }
 
         /// <summary>
         ///     Gets the Format of the Index Buffer (byte or short).
         /// </summary>
         /// <returns></returns>
-        public PICACommand.indexBufferFormat getIndexBufferFormat()
+        public PICACommand.IndexBufferFormat GetIndexBufferFormat()
         {
-            return (PICACommand.indexBufferFormat)(getParameter(PICACommand.indexBufferConfig) >> 31);
+            return (PICACommand.IndexBufferFormat)(GetParameter(PICACommand.indexBufferConfig) >> 31);
         }
 
         /// <summary>
         ///     Gets the total number of vertices indexed by the Index Buffer.
         /// </summary>
         /// <returns></returns>
-        public uint getIndexBufferTotalVertices()
+        public uint GetIndexBufferTotalVertices()
         {
-            return getParameter(PICACommand.indexBufferTotalVertices);
+            return GetParameter(PICACommand.indexBufferTotalVertices);
         }
 
         /// <summary>
@@ -256,7 +255,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="stage">The stage (0-5)</param>
         /// <returns></returns>
-        public RenderBase.OTextureCombiner getTevStage(byte stage)
+        public RenderBase.OTextureCombiner GetTevStage(byte stage)
         {
             RenderBase.OTextureCombiner output = new RenderBase.OTextureCombiner();
 
@@ -273,7 +272,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             }
 
             //Source
-            uint source = getParameter(baseCommand);
+            uint source = GetParameter(baseCommand);
 
             output.rgbSource[0] = (RenderBase.OCombineSource)(source & 0xf);
             output.rgbSource[1] = (RenderBase.OCombineSource)((source >> 4) & 0xf);
@@ -284,7 +283,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             output.alphaSource[2] = (RenderBase.OCombineSource)((source >> 24) & 0xf);
 
             //Operand
-            uint operand = getParameter((ushort)(baseCommand + 1));
+            uint operand = GetParameter((ushort)(baseCommand + 1));
 
             output.rgbOperand[0] = (RenderBase.OCombineOperandRgb)(operand & 0xf);
             output.rgbOperand[1] = (RenderBase.OCombineOperandRgb)((operand >> 4) & 0xf);
@@ -295,13 +294,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             output.alphaOperand[2] = (RenderBase.OCombineOperandAlpha)((operand >> 20) & 0xf);
 
             //Operator
-            uint combine = getParameter((ushort)(baseCommand + 2));
+            uint combine = GetParameter((ushort)(baseCommand + 2));
 
             output.combineRgb = (RenderBase.OCombineOperator)(combine & 0xffff);
             output.combineAlpha = (RenderBase.OCombineOperator)(combine >> 16);
 
             //Scale
-            uint scale = getParameter((ushort)(baseCommand + 4));
+            uint scale = GetParameter((ushort)(baseCommand + 4));
 
             output.rgbScale = (ushort)((scale & 0xffff) + 1);
             output.alphaScale = (ushort)((scale >> 16) + 1);
@@ -313,9 +312,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Fragment Buffer Color.
         /// </summary>
         /// <returns></returns>
-        public Color getFragmentBufferColor()
+        public Color GetFragmentBufferColor()
         {
-            uint rgba = getParameter(PICACommand.fragmentBufferColor);
+            uint rgba = GetParameter(PICACommand.fragmentBufferColor);
             return Color.FromArgb((byte)(rgba >> 24),
                 (byte)(rgba & 0xff),
                 (byte)((rgba >> 8) & 0xff),
@@ -326,11 +325,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets Blending operation parameters.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OBlendOperation getBlendOperation()
+        public RenderBase.OBlendOperation GetBlendOperation()
         {
             RenderBase.OBlendOperation output = new RenderBase.OBlendOperation();
 
-            uint value = getParameter(PICACommand.blendConfig);
+            uint value = GetParameter(PICACommand.blendConfig);
             output.rgbFunctionSource = (RenderBase.OBlendFunction)((value >> 16) & 0xf);
             output.rgbFunctionDestination = (RenderBase.OBlendFunction)((value >> 20) & 0xf);
             output.alphaFunctionSource = (RenderBase.OBlendFunction)((value >> 24) & 0xf);
@@ -345,20 +344,20 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Logical operation applied to Fragment colors.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OLogicalOperation getColorLogicOperation()
+        public RenderBase.OLogicalOperation GetColorLogicOperation()
         {
-            return (RenderBase.OLogicalOperation)(getParameter(PICACommand.colorLogicOperationConfig) & 0xf);
+            return (RenderBase.OLogicalOperation)(GetParameter(PICACommand.colorLogicOperationConfig) & 0xf);
         }
 
         /// <summary>
         ///     Gets the parameters used for Alpha testing.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OAlphaTest getAlphaTest()
+        public RenderBase.OAlphaTest GetAlphaTest()
         {
             RenderBase.OAlphaTest output = new RenderBase.OAlphaTest();
 
-            uint value = getParameter(PICACommand.alphaTestConfig);
+            uint value = GetParameter(PICACommand.alphaTestConfig);
             output.isTestEnabled = (value & 1) > 0;
             output.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
             output.testReference = ((value >> 8) & 0xff);
@@ -370,12 +369,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the parameters used for Stencil testing.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OStencilOperation getStencilTest()
+        public RenderBase.OStencilOperation GetStencilTest()
         {
             RenderBase.OStencilOperation output = new RenderBase.OStencilOperation();
 
             //Test
-            uint test = getParameter(PICACommand.stencilTestConfig);
+            uint test = GetParameter(PICACommand.stencilTestConfig);
 
             output.isTestEnabled = (test & 1) > 0;
             output.testFunction = (RenderBase.OTestFunction)((test >> 4) & 0xf);
@@ -383,7 +382,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             output.testMask = (test >> 24);
 
             //Operation
-            uint operation = getParameter(PICACommand.stencilOperationConfig);
+            uint operation = GetParameter(PICACommand.stencilOperationConfig);
 
             output.failOperation = (RenderBase.OStencilOp)(operation & 0xf);
             output.zFailOperation = (RenderBase.OStencilOp)((operation >> 4) & 0xf);
@@ -396,11 +395,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the parameters used for Depth testing.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.ODepthOperation getDepthTest()
+        public RenderBase.ODepthOperation GetDepthTest()
         {
             RenderBase.ODepthOperation output = new RenderBase.ODepthOperation();
 
-            uint value = getParameter(PICACommand.depthTestConfig);
+            uint value = GetParameter(PICACommand.depthTestConfig);
             output.isTestEnabled = (value & 1) > 0;
             output.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
             output.isMaskEnabled = (value & 0x1000) > 0;
@@ -412,9 +411,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Culling mode.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OCullMode getCullMode()
+        public RenderBase.OCullMode GetCullMode()
         {
-            uint value = getParameter(PICACommand.cullModeConfig);
+            uint value = GetParameter(PICACommand.cullModeConfig);
             return (RenderBase.OCullMode)(value & 0xf);
         }
 
@@ -422,7 +421,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the 1D LookUp table sampler used on the Fragment Shader lighting.
         /// </summary>
         /// <returns></returns>
-        public float[] getFSHLookUpTable()
+        public float[] GetFSHLookUpTable()
         {
             return lookUpTable;
         }
@@ -431,11 +430,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets if the Absolute value should be used before using the LUT for each Input.
         /// </summary>
         /// <returns></returns>
-        public PICACommand.fragmentSamplerAbsolute getReflectanceSamplerAbsolute()
+        public PICACommand.FragmentSamplerAbsolute GetReflectanceSamplerAbsolute()
         {
-            PICACommand.fragmentSamplerAbsolute output = new PICACommand.fragmentSamplerAbsolute();
+            PICACommand.FragmentSamplerAbsolute output = new PICACommand.FragmentSamplerAbsolute();
 
-            uint value = getParameter(PICACommand.lutSamplerAbsolute);
+            uint value = GetParameter(PICACommand.lutSamplerAbsolute);
             output.r = (value & 0x2000000) == 0;
             output.g = (value & 0x200000) == 0;
             output.b = (value & 0x20000) == 0;
@@ -450,11 +449,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Input used to pick a value from the LookUp Table on Fragment Shader.
         /// </summary>
         /// <returns></returns>
-        public PICACommand.fragmentSamplerInput getReflectanceSamplerInput()
+        public PICACommand.FragmentSamplerInput GetReflectanceSamplerInput()
         {
-            PICACommand.fragmentSamplerInput output = new PICACommand.fragmentSamplerInput();
+            PICACommand.FragmentSamplerInput output = new PICACommand.FragmentSamplerInput();
 
-            uint value = getParameter(PICACommand.lutSamplerInput);
+            uint value = GetParameter(PICACommand.lutSamplerInput);
             output.r = (RenderBase.OFragmentSamplerInput)((value >> 24) & 0xf);
             output.g = (RenderBase.OFragmentSamplerInput)((value >> 20) & 0xf);
             output.b = (RenderBase.OFragmentSamplerInput)((value >> 16) & 0xf);
@@ -469,11 +468,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the scale used on the value on Fragment Shader.
         /// </summary>
         /// <returns></returns>
-        public PICACommand.fragmentSamplerScale getReflectanceSamplerScale()
+        public PICACommand.FragmentSamplerScale GetReflectanceSamplerScale()
         {
-            PICACommand.fragmentSamplerScale output = new PICACommand.fragmentSamplerScale();
+            PICACommand.FragmentSamplerScale output = new PICACommand.FragmentSamplerScale();
 
-            uint value = getParameter(PICACommand.lutSamplerScale);
+            uint value = GetParameter(PICACommand.lutSamplerScale);
             output.r = (RenderBase.OFragmentSamplerScale)((value >> 24) & 0xf);
             output.g = (RenderBase.OFragmentSamplerScale)((value >> 20) & 0xf);
             output.b = (RenderBase.OFragmentSamplerScale)((value >> 16) & 0xf);
@@ -488,9 +487,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the Address of the texture at Texture Unit 0.
         /// </summary>
         /// <returns></returns>
-        public uint getTexUnit0Address()
+        public uint GetTexUnit0Address()
         {
-            return getParameter(PICACommand.texUnit0Address);
+            return GetParameter(PICACommand.texUnit0Address);
         }
 
         /// <summary>
@@ -498,11 +497,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     such as the wrapping mode, filtering and so on.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OTextureMapper getTexUnit0Mapper()
+        public RenderBase.OTextureMapper GetTexUnit0Mapper()
         {
             RenderBase.OTextureMapper output = new RenderBase.OTextureMapper();
 
-            uint value = getParameter(PICACommand.texUnit0Param);
+            uint value = GetParameter(PICACommand.texUnit0Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
             output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
@@ -516,9 +515,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     when the wrapping mode is set to Border.
         /// </summary>
         /// <returns></returns>
-        public Color getTexUnit0BorderColor()
+        public Color GetTexUnit0BorderColor()
         {
-            uint rgba = getParameter(PICACommand.texUnit0BorderColor);
+            uint rgba = GetParameter(PICACommand.texUnit0BorderColor);
             return Color.FromArgb((byte)(rgba >> 24),
                 (byte)(rgba & 0xff),
                 (byte)((rgba >> 8) & 0xff),
@@ -529,27 +528,27 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the resolution of the texture at Texture Unit 0.
         /// </summary>
         /// <returns></returns>
-        public Size getTexUnit0Size()
+        public Size GetTexUnit0Size()
         {
-            uint value = getParameter(PICACommand.texUnit0Size);
+            uint value = GetParameter(PICACommand.texUnit0Size);
             return new Size((int)(value >> 16), (int)(value & 0xffff));
         }
 
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 0.
         /// </summary>
-        public RenderBase.OTextureFormat getTexUnit0Format()
+        public RenderBase.OTextureFormat GetTexUnit0Format()
         {
-            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit0Type);
+            return (RenderBase.OTextureFormat)GetParameter(PICACommand.texUnit0Type);
         }
 
         /// <summary>
         ///     Gets the Address of the texture at Texture Unit 1.
         /// </summary>
         /// <returns></returns>
-        public uint getTexUnit1Address()
+        public uint GetTexUnit1Address()
         {
-            return getParameter(PICACommand.texUnit1Address);
+            return GetParameter(PICACommand.texUnit1Address);
         }
 
         /// <summary>
@@ -557,11 +556,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     such as the wrapping mode, filtering and so on.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OTextureMapper getTexUnit1Mapper()
+        public RenderBase.OTextureMapper GetTexUnit1Mapper()
         {
             RenderBase.OTextureMapper output = new RenderBase.OTextureMapper();
 
-            uint value = getParameter(PICACommand.texUnit1Param);
+            uint value = GetParameter(PICACommand.texUnit1Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
             output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
@@ -575,9 +574,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     when the wrapping mode is set to Border.
         /// </summary>
         /// <returns></returns>
-        public Color getTexUnit1BorderColor()
+        public Color GetTexUnit1BorderColor()
         {
-            uint rgba = getParameter(PICACommand.texUnit1BorderColor);
+            uint rgba = GetParameter(PICACommand.texUnit1BorderColor);
             return Color.FromArgb((byte)(rgba >> 24),
                 (byte)(rgba & 0xff),
                 (byte)((rgba >> 8) & 0xff),
@@ -588,27 +587,27 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the resolution of the texture at Texture Unit 1.
         /// </summary>
         /// <returns></returns>
-        public Size getTexUnit1Size()
+        public Size GetTexUnit1Size()
         {
-            uint value = getParameter(PICACommand.texUnit1Size);
+            uint value = GetParameter(PICACommand.texUnit1Size);
             return new Size((int)(value >> 16), (int)(value & 0xffff));
         }
 
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 1.
         /// </summary>
-        public RenderBase.OTextureFormat getTexUnit1Format()
+        public RenderBase.OTextureFormat GetTexUnit1Format()
         {
-            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit1Type);
+            return (RenderBase.OTextureFormat)GetParameter(PICACommand.texUnit1Type);
         }
 
         /// <summary>
         ///     Gets the Address of the texture at Texture Unit 2.
         /// </summary>
         /// <returns></returns>
-        public uint getTexUnit2Address()
+        public uint GetTexUnit2Address()
         {
-            return getParameter(PICACommand.texUnit2Address);
+            return GetParameter(PICACommand.texUnit2Address);
         }
 
         /// <summary>
@@ -616,11 +615,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     such as the wrapping mode, filtering and so on.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.OTextureMapper getTexUnit2Mapper()
+        public RenderBase.OTextureMapper GetTexUnit2Mapper()
         {
             RenderBase.OTextureMapper output = new RenderBase.OTextureMapper();
 
-            uint value = getParameter(PICACommand.texUnit2Param);
+            uint value = GetParameter(PICACommand.texUnit2Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
             output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
@@ -634,9 +633,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     when the wrapping mode is set to Border.
         /// </summary>
         /// <returns></returns>
-        public Color getTexUnit2BorderColor()
+        public Color GetTexUnit2BorderColor()
         {
-            uint rgba = getParameter(PICACommand.texUnit2BorderColor);
+            uint rgba = GetParameter(PICACommand.texUnit2BorderColor);
             return Color.FromArgb(
                 (byte)(rgba >> 24),
                 (byte)(rgba & 0xff),
@@ -648,18 +647,18 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         ///     Gets the resolution of the texture at Texture Unit 2.
         /// </summary>
         /// <returns></returns>
-        public Size getTexUnit2Size()
+        public Size GetTexUnit2Size()
         {
-            uint value = getParameter(PICACommand.texUnit2Size);
+            uint value = GetParameter(PICACommand.texUnit2Size);
             return new Size((int)(value >> 16), (int)(value & 0xffff));
         }
 
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 2.
         /// </summary>
-        public RenderBase.OTextureFormat getTexUnit2Format()
+        public RenderBase.OTextureFormat GetTexUnit2Format()
         {
-            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit2Type);
+            return (RenderBase.OTextureFormat)GetParameter(PICACommand.texUnit2Type);
         }
     }
 }

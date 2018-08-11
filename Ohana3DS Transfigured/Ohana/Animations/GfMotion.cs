@@ -7,7 +7,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 {
     class GfMotion
     {
-        public static List<RenderBase.OSkeletalAnimation> load(Stream data)
+        public static List<RenderBase.OSkeletalAnimation> Load(Stream data)
         {
             List<RenderBase.OSkeletalAnimation> output = new List<RenderBase.OSkeletalAnimation>();
 
@@ -24,7 +24,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 
                 data.Seek(animAddr + 4, SeekOrigin.Begin);
 
-                output.Add(loadAnim(input, anm));
+                output.Add(LoadAnim(input, anm));
             }
 
             data.Close();
@@ -32,13 +32,15 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
             return output;
         }
 
-        public static RenderBase.OSkeletalAnimation loadAnim(BinaryReader input, int anm = 0)
+        public static RenderBase.OSkeletalAnimation LoadAnim(BinaryReader input, int anm = 0)
         {
             Stream data = input.BaseStream;
 
-            RenderBase.OSkeletalAnimation anim = new RenderBase.OSkeletalAnimation();
-            anim.name = "anim_" + anm;
-            anim.frameSize = 1;
+            RenderBase.OSkeletalAnimation anim = new RenderBase.OSkeletalAnimation
+            {
+                Name = "anim_" + anm,
+                FrameSize = 1
+            };
 
             uint unkFlags = input.ReadUInt32();
             uint unkCount = input.ReadUInt32();
@@ -53,7 +55,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 
             for (int b = 0; b < boneNamesCount; b++)
             {
-                boneNames[b] = IOUtils.readStringWithLength(input, input.ReadByte());
+                boneNames[b] = IOUtils.ReadStringWithLength(input, input.ReadByte());
             }
 
             data.Seek(boneNamesStart + boneNamesLength, SeekOrigin.Begin);
@@ -66,10 +68,11 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
                 uint frameLength = input.ReadUInt32();
                 long frameStart = data.Position;
 
-                RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
-
-                bone.name = boneNames[b];
-                bone.isAxisAngle = flags >> 31 == 0;
+                RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone
+                {
+                    name = boneNames[b],
+                    isAxisAngle = flags >> 31 == 0
+                };
 
                 for (int axis = 0; axis < 9; axis++)
                 {
@@ -78,7 +81,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
 
                     bool mul2 = axis > 2 && axis < 6 && (flags >> 31) == 0;
 
-                    if (axisConst) addFrame(bone, mul2, axis, input.ReadSingle());
+                    if (axisConst) AddFrame(bone, mul2, axis, input.ReadSingle());
                     if (!axisExists) continue;
 
                     uint keyFramesCount = input.ReadUInt32();
@@ -101,7 +104,7 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
                         float value = valueOffset + (qvalue / (float)0xffff) * valueScale;
                         float slope = slopeOffset + (qslope / (float)0xffff) * slopeScale;
 
-                        addFrame(bone, mul2, axis, value, keyFrames[i], slope);
+                        AddFrame(bone, mul2, axis, value, keyFrames[i], slope);
                     }
                 }
 
@@ -135,12 +138,12 @@ namespace Ohana3DS_Transfigured.Ohana.Animations
                 b.translationZ.exists = b.translationZ.keyFrames.Count > 0;
             }
 
-            if (bbone > 0) anim.frameSize = bbone;
+            if (bbone > 0) anim.FrameSize = bbone;
 
             return anim;
         }
 
-        private static void addFrame(
+        private static void AddFrame(
             RenderBase.OSkeletalAnimationBone bone,
             bool mul2,
             int axis,

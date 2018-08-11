@@ -38,30 +38,32 @@ namespace Ohana3DS_Transfigured.GUI
             ShowSidebar = Settings.Default.viewShowSidebar;
         }
 
-        public void launch(object data)
+        public void Launch(object data)
         {
-            renderer = new RenderEngine();
-            renderer.models = (RenderBase.OModelGroup)data;
-            renderer.initialize(Screen.Handle, Screen.Width, Screen.Height);
+            renderer = new RenderEngine
+            {
+                models = (RenderBase.OModelGroup)data
+            };
+            renderer.Initialize(Screen.Handle, Screen.Width, Screen.Height);
 
-            ModelsPanel.launch(renderer);
-            TexturesPanel.launch(renderer);
-            SkeletalAnimationsPanel.launch(renderer, FileIO.fileType.skeletalAnimation);
-            MaterialAnimationsPanel.launch(renderer, FileIO.fileType.materialAnimation);
-            VisibilityAnimationsPanel.launch(renderer, FileIO.fileType.visibilityAnimation);
+            ModelsPanel.Launch(renderer);
+            TexturesPanel.Launch(renderer);
+            SkeletalAnimationsPanel.Launch(renderer, FileIO.FileType.skeletalAnimation);
+            MaterialAnimationsPanel.Launch(renderer, FileIO.FileType.materialAnimation);
+            VisibilityAnimationsPanel.Launch(renderer, FileIO.FileType.visibilityAnimation);
 
-            renderer.render();
+            renderer.Render();
         }
 
-        public void finalize()
+        public void Clear()
         {
-            TexturesPanel.finalize();
+            TexturesPanel.Clear();
             renderer.Dispose();
         }
 
         private void Screen_Resize(object sender, EventArgs e)
         {
-            if (renderer != null) renderer.resize(Screen.Width, Screen.Height);
+            if (renderer != null) renderer.Resize(Screen.Width, Screen.Height);
         }
 
         private void Screen_MouseMove(object sender, MouseEventArgs e)
@@ -75,13 +77,13 @@ namespace Ohana3DS_Transfigured.GUI
                         case MouseButtons.Left:
                             float rY = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
                             float rX = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
-                            renderer.setRotation(rY, rX);
+                            renderer.SetRotation(rY, rX);
                             initialRotation = new RenderBase.OVector2(e.X, e.Y);
                             break;
                         case MouseButtons.Right:
                             float tX = (initialMovement.x - e.X) + finalMovement.x;
                             float tY = (initialMovement.y - e.Y) + finalMovement.y;
-                            renderer.setTranslation(tX, tY);
+                            renderer.SetTranslation(tX, tY);
                             break;
                     }
                 }
@@ -115,14 +117,14 @@ namespace Ohana3DS_Transfigured.GUI
             float step = 1f;
             if (ModifierKeys == Keys.Shift) step = 0.1f;
             if (renderer != null && e.Delta > 0)
-                renderer.setZoom(renderer.Zoom + step);
+                renderer.SetZoom(renderer.Zoom + step);
             else
-                renderer.setZoom(renderer.Zoom - step);
+                renderer.SetZoom(renderer.Zoom - step);
         }
 
         private void Splitter_Panel1_Layout(object sender, LayoutEventArgs e)
         {
-            recalcGroupSize();
+            RecalcGroupSize();
         }
 
         private void Group_GroupBoxExpanded(object sender, EventArgs e)
@@ -133,10 +135,10 @@ namespace Ohana3DS_Transfigured.GUI
                 if (group != senderGroup) group.Collapsed = true;
             }
 
-            recalcGroupSize();
+            RecalcGroupSize();
         }
 
-        private void recalcGroupSize()
+        private void RecalcGroupSize()
         {
             int usedSpace = (Splitter.Panel1.Controls.Count - 1) * OGroupBox.collapsedHeight;
             foreach (OGroupBox group in Splitter.Panel1.Controls.OfType<OGroupBox>())

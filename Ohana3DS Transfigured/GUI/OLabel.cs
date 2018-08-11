@@ -58,8 +58,8 @@ namespace Ohana3DS_Transfigured.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            string text = autoSize ? Text : DrawingUtils.clampText(e.Graphics, Text, Font, Width);
-            SizeF textSize = DrawingUtils.measureText(e.Graphics, text, Font);
+            string text = autoSize ? Text : DrawingUtils.ClampText(e.Graphics, Text, Font, Width);
+            SizeF textSize = DrawingUtils.MeasureText(e.Graphics, text, Font);
             if (autoSize) Size = new Size((int)textSize.Width, (int)textSize.Height);
             int x = centered ? (Width / 2) - ((int)textSize.Width / 2) : 0;
             Point textLocation = new Point(x, (Height / 2) - ((int)textSize.Height / 2));

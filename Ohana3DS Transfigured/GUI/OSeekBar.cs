@@ -26,11 +26,11 @@ namespace Ohana3DS_Transfigured.GUI
 
         public OSeekBar()
         {
-            init();
+            Init();
             InitializeComponent();
         }
 
-        private void init()
+        private void Init()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.UserPaint, true);
@@ -65,7 +65,7 @@ namespace Ohana3DS_Transfigured.GUI
             {
                 if (value < 1) throw new Exception("OSeekBar: Maximum value MUST be greater than 0!");
                 max = value;
-                recalcSize();
+                RecalcSize();
                 if (seekX > value)
                 {
                     seekX = value;
@@ -124,7 +124,7 @@ namespace Ohana3DS_Transfigured.GUI
                 {
                     seek = e.X - knobX;
                     mouseDrag = true;
-                    if (SeekStart != null) SeekStart(this, EventArgs.Empty);
+                    SeekStart?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
@@ -134,7 +134,7 @@ namespace Ohana3DS_Transfigured.GUI
                     knobX = x;
 
                     seekX = (int)(((float)knobX / Math.Max(Width - knobSize, 1)) * max);
-                    if (Seek != null) Seek(this, EventArgs.Empty);
+                    Seek?.Invoke(this, EventArgs.Empty);
                     Refresh();
                 }
             }
@@ -148,7 +148,7 @@ namespace Ohana3DS_Transfigured.GUI
             if (e.Button == MouseButtons.Left)
             {
                 mouseDrag = false;
-                if (SeekEnd != null) SeekEnd(this, EventArgs.Empty);
+                SeekEnd?.Invoke(this, EventArgs.Empty);
             }
             base.OnMouseUp(e);
         }
@@ -165,7 +165,7 @@ namespace Ohana3DS_Transfigured.GUI
                     knobX = x;
 
                     seekX = (int)(((float)x / Math.Max(Width - knobSize, 1)) * max);
-                    if (Seek != null) Seek(this, EventArgs.Empty);
+                    Seek?.Invoke(this, EventArgs.Empty);
                     Refresh();
                 }
             }
@@ -175,12 +175,12 @@ namespace Ohana3DS_Transfigured.GUI
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
-            recalcSize();
+            RecalcSize();
 
             base.OnLayout(levent);
         }
 
-        private void recalcSize()
+        private void RecalcSize()
         {
             knobX = (int)(((float)seekX / max) * (Width - knobSize));
             Refresh();

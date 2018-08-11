@@ -47,7 +47,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameter">Parameter of the command</param>
         /// <param name="mask">Mask used when updating the register value</param>
-        public void setCommand(ushort commandId, uint parameter, byte mask = 0xf)
+        public void SetCommand(ushort commandId, uint parameter, byte mask = 0xf)
         {
             writer.Write(parameter);
             writer.Write((uint)(commandId | (mask << 16)));
@@ -58,7 +58,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameter">Parameter of the command</param>
-        public void setCommand(ushort commandId, float parameter)
+        public void SetCommand(ushort commandId, float parameter)
         {
             writer.Write(parameter);
             writer.Write((uint)(commandId | (0xf << 16)));
@@ -69,7 +69,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameter">Parameter of the command</param>
-        public void setCommand(ushort commandId, Color parameter)
+        public void SetCommand(ushort commandId, Color parameter)
         {
             uint rgba;
             rgba = (uint)parameter.A << 24;
@@ -86,7 +86,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameters">Parameters of the command</param>
         /// <param name="mask">Mask used when updating the register value</param>
-        public void setCommand(ushort commandId, List<uint> parameters, byte mask = 0xf)
+        public void SetCommand(ushort commandId, List<uint> parameters, byte mask = 0xf)
         {
             if (parameters.Count == 0) return;
             writer.Write(parameters[0]);
@@ -99,7 +99,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (mask << 16)));
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameters">Parameters of the command</param>
         /// <param name="mask">Mask used when updating the register value</param>
-        public void setCommand(ushort commandId, List<float> parameters)
+        public void SetCommand(ushort commandId, List<float> parameters)
         {
             if (parameters.Count == 0) return;
             writer.Write(parameters[0]);
@@ -121,7 +121,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (0xf << 16)));
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameters">Parameters of the command</param>
         /// <param name="mask">Mask used when updating the register value</param>
-        public void setCommand(ushort commandId, float[] parameters)
+        public void SetCommand(ushort commandId, float[] parameters)
         {
             if (parameters.Length == 0) return;
             writer.Write(parameters[0]);
@@ -143,7 +143,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (0xf << 16)));
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameters">Parameters of the command</param>
         /// <param name="mask">Mask used when updating the register value</param>
-        public void setCommandConsecutive(ushort commandId, List<uint> parameters, byte mask = 0xf)
+        public void SetCommandConsecutive(ushort commandId, List<uint> parameters, byte mask = 0xf)
         {
             if (parameters.Count == 0) return;
             writer.Write(parameters[0]);
@@ -166,7 +166,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (mask << 16)) | 0x80000000);
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameters">Parameters of the command</param>
-        public void setCommandConsecutive(ushort commandId, List<float> parameters)
+        public void SetCommandConsecutive(ushort commandId, List<float> parameters)
         {
             if (parameters.Count == 0) return;
             writer.Write(parameters[0]);
@@ -188,7 +188,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (0xf << 16)) | 0x80000000);
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// <param name="commandId">ID of the command</param>
         /// <param name="parameter">UInt parameter of the command</param>
         /// <param name="parameters">Extra Float parameters of the command</param>
-        public void setCommandConsecutive(ushort commandId, uint parameter, List<float> parameters)
+        public void SetCommandConsecutive(ushort commandId, uint parameter, List<float> parameters)
         {
             writer.Write(parameter);
             if (parameters.Count > 0)
@@ -210,14 +210,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
             else
                 writer.Write((uint)(commandId | (0xf << 16)) | 0x80000000);
 
-            align(7);
+            Align(7);
         }
 
         /// <summary>
         ///     Adds padding 0x0 bytes on the data until all address bits of the mask equals 0.
         /// </summary>
         /// <param name="mask">The mask</param>
-        public void align(uint mask)
+        public void Align(uint mask)
         {
             while ((writer.BaseStream.Position & mask) != 0) writer.Write((byte)0);
         }
@@ -227,7 +227,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PICA200
         /// </summary>
         /// <param name="mask">The mask</param>
         /// <param name="maskedValue">Value that masked bits should equal to stop padding</param>
-        public void align(uint mask, uint maskedValue)
+        public void Align(uint mask, uint maskedValue)
         {
             while ((writer.BaseStream.Position & mask) != maskedValue) writer.Write((byte)0);
         }

@@ -87,7 +87,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public SERIParameter getParameter(string name)
+            public SERIParameter GetParameter(string name)
             {
                 foreach (SERIParameter param in Parameters) if (param.Name == name) return param;
                 return null;
@@ -99,9 +99,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public string getStringParameter(string name)
+            public string GetStringParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((String)param).Value;
             }
@@ -112,9 +112,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public int getIntegerParameter(string name)
+            public int GetIntegerParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return 0;
                 return ((Integer)param).Value;
             }
@@ -125,9 +125,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public bool getBooleanParameter(string name)
+            public bool GetBooleanParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return false;
                 return ((Boolean)param).Value;
             }
@@ -138,9 +138,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public float getFloatParameter(string name)
+            public float GetFloatParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return 0;
                 return ((Float)param).Value;
             }
@@ -151,9 +151,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public string[] getStringArrayParameter(string name)
+            public string[] GetStringArrayParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((StringArray)param).Values;
             }
@@ -164,9 +164,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public int[] getIntegerArrayParameter(string name)
+            public int[] GetIntegerArrayParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((IntegerArray)param).Values;
             }
@@ -177,9 +177,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public bool[] getBooleanArrayParameter(string name)
+            public bool[] GetBooleanArrayParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((BooleanArray)param).Values;
             }
@@ -190,9 +190,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public float[] getFloatArrayParameter(string name)
+            public float[] GetFloatArrayParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((FloatArray)param).Values;
             }
@@ -203,9 +203,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
             /// <param name="data">The SERI data</param>
             /// <param name="name">The name of the parameter</param>
             /// <returns></returns>
-            public SERIParameter[] getNestArrayParameter(string name)
+            public SERIParameter[] GetNestArrayParameter(string name)
             {
-                SERIParameter param = getParameter(name);
+                SERIParameter param = GetParameter(name);
                 if (param == null) return null;
                 return ((NestedArray)param).Values;
             }
@@ -216,11 +216,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
         /// </summary>
         /// <param name="xmlFileName">The Full Path of the XML file</param>
         /// <returns></returns>
-        public static SERI getSERI(string xmlFileName)
+        public static SERI GetSERI(string xmlFileName)
         {
             using (FileStream input = new FileStream(xmlFileName, FileMode.Open))
             {
-                return getSERI(input);
+                return GetSERI(input);
             }
         }
 
@@ -229,7 +229,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
         /// </summary>
         /// <param name="xmlData">The Stream of the XML file</param>
         /// <returns></returns>
-        public static SERI getSERI(Stream xmlData)
+        public static SERI GetSERI(Stream xmlData)
         {
             XmlSerializer deserializer = new XmlSerializer(typeof(SERI));
             SERI output = (SERI)deserializer.Deserialize(xmlData);

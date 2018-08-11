@@ -1,6 +1,7 @@
 ﻿//OMenuStrip made for Ohana3DS by gdkchan
 //Custom menu design, should be used with "Renderer" property of a Menu
 
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -8,7 +9,7 @@ using Ohana3DS_Transfigured.Properties;
 
 namespace Ohana3DS_Transfigured.GUI
 {
-    public partial class OMenuStrip : ToolStripRenderer
+    public partial class OMenuStrip : ToolStripRenderer, IDisposable
     {
         private Color bgColor = Color.FromArgb(16, 16, 16);
         private Color separator = Color.Gray;
@@ -83,5 +84,24 @@ namespace Ohana3DS_Transfigured.GUI
 
             base.OnRenderMenuItemBackground(e);
         }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            // free native resources
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
     }
 }

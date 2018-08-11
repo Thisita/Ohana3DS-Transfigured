@@ -21,7 +21,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
         /// <param name="fileName">The output File Name</param>
         /// <param name="modelIndex">Index of the model to be exported</param>
         /// <param name="skeletalAnimationIndex">(Optional) Index of the skeletal animation</param>
-        public static void export(RenderBase.OModelGroup model, string fileName, int modelIndex, int skeletalAnimationIndex = -1)
+        public static void Export(RenderBase.OModelGroup model, string fileName, int modelIndex, int skeletalAnimationIndex = -1)
         {
             RenderBase.OModel mdl = model.model[modelIndex];
             StringBuilder output = new StringBuilder();
@@ -41,12 +41,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 foreach (RenderBase.OBone bone in mdl.skeleton)
                 {
                     string line = index.ToString();
-                    line += " " + getString(bone.translation.x);
-                    line += " " + getString(bone.translation.y);
-                    line += " " + getString(bone.translation.z);
-                    line += " " + getString(bone.rotation.x);
-                    line += " " + getString(bone.rotation.y);
-                    line += " " + getString(bone.rotation.z);
+                    line += " " + GetString(bone.translation.x);
+                    line += " " + GetString(bone.translation.y);
+                    line += " " + GetString(bone.translation.z);
+                    line += " " + GetString(bone.rotation.x);
+                    line += " " + GetString(bone.rotation.y);
+                    line += " " + GetString(bone.rotation.z);
                     output.AppendLine(line);
                     index++;
                 }
@@ -54,39 +54,41 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             else
             {
                 bool error = false;
-                for (float frame = 0; frame < model.skeletalAnimation.list[skeletalAnimationIndex].frameSize; frame += 1)
+                for (float frame = 0; frame < model.skeletalAnimation.list[skeletalAnimationIndex].FrameSize; frame += 1)
                 {
                     output.AppendLine("time " + ((int)frame).ToString());
                     for (int index = 0; index < mdl.skeleton.Count; index++)
                     {
-                        RenderBase.OBone newBone = new RenderBase.OBone();
-                        newBone.parentId = mdl.skeleton[index].parentId;
-                        newBone.rotation = new RenderBase.OVector3(mdl.skeleton[index].rotation);
-                        newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
+                        RenderBase.OBone newBone = new RenderBase.OBone
+                        {
+                            parentId = mdl.skeleton[index].parentId,
+                            rotation = new RenderBase.OVector3(mdl.skeleton[index].rotation),
+                            translation = new RenderBase.OVector3(mdl.skeleton[index].translation)
+                        };
                         foreach (RenderBase.OSkeletalAnimationBone b in ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[skeletalAnimationIndex]).bone)
                         {
                             if (b.isFrameFormat || b.isFullBakedFormat) error = true;
                             if (b.name == mdl.skeleton[index].name && !b.isFrameFormat && !b.isFullBakedFormat)
                             {
-                                if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
-                                if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
-                                if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
+                                if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.GetKey(b.rotationX, frame);
+                                if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.GetKey(b.rotationY, frame);
+                                if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.GetKey(b.rotationZ, frame);
 
                                 if (b.translationX.exists)
                                 {
-                                    newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
+                                    newBone.translation.x = AnimationUtils.GetKey(b.translationX, frame);
                                     newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
                                 }
 
                                 if (b.translationY.exists)
                                 {
-                                    newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
+                                    newBone.translation.y = AnimationUtils.GetKey(b.translationY, frame);
                                     newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
                                 }
 
                                 if (b.translationZ.exists)
                                 {
-                                    newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
+                                    newBone.translation.z = AnimationUtils.GetKey(b.translationZ, frame);
                                     newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
                                 }
 
@@ -95,12 +97,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         }
 
                         string line = index.ToString();
-                        line += " " + getString(newBone.translation.x);
-                        line += " " + getString(newBone.translation.y);
-                        line += " " + getString(newBone.translation.z);
-                        line += " " + getString(newBone.rotation.x);
-                        line += " " + getString(newBone.rotation.y);
-                        line += " " + getString(newBone.rotation.z);
+                        line += " " + GetString(newBone.translation.x);
+                        line += " " + GetString(newBone.translation.y);
+                        line += " " + GetString(newBone.translation.z);
+                        line += " " + GetString(newBone.rotation.x);
+                        line += " " + GetString(newBone.rotation.y);
+                        line += " " + GetString(newBone.rotation.z);
                         output.AppendLine(line);
                     }
                 }
@@ -128,21 +130,21 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         string line = "0";
 
-                        line += " " + getString(vertex.position.x);
-                        line += " " + getString(vertex.position.y);
-                        line += " " + getString(vertex.position.z);
-                        line += " " + getString(vertex.normal.x);
-                        line += " " + getString(vertex.normal.y);
-                        line += " " + getString(vertex.normal.z);
-                        line += " " + getString(vertex.texture0.x);
-                        line += " " + getString(vertex.texture0.y);
+                        line += " " + GetString(vertex.position.x);
+                        line += " " + GetString(vertex.position.y);
+                        line += " " + GetString(vertex.position.z);
+                        line += " " + GetString(vertex.normal.x);
+                        line += " " + GetString(vertex.normal.y);
+                        line += " " + GetString(vertex.normal.z);
+                        line += " " + GetString(vertex.texture0.x);
+                        line += " " + GetString(vertex.texture0.y);
 
                         int nodeCount = Math.Min(vertex.node.Count, vertex.weight.Count);
                         line += " " + nodeCount;
                         for (int i = 0; i < nodeCount; i++)
                         {
                             line += " " + vertex.node[i];
-                            line += " " + getString(vertex.weight[i]);
+                            line += " " + GetString(vertex.weight[i]);
                         }
 
                         output.AppendLine(line);
@@ -157,12 +159,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             File.WriteAllText(fileName, output.ToString());
         }
 
-        private static string getString(float value)
+        private static string GetString(float value)
         {
             return value.ToString(CultureInfo.InvariantCulture);
         }
 
-        private struct smdNode
+        private struct SmdNode
         {
             public int index;
             public string name;
@@ -174,19 +176,21 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
         /// </summary>
         /// <param name="fileName">The complete file name</param>
         /// <returns></returns>
-        public static RenderBase.OModelGroup import(string fileName)
+        public static RenderBase.OModelGroup Import(string fileName)
         {
             StreamReader reader = File.OpenText(fileName);
 
             RenderBase.OModelGroup model = new RenderBase.OModelGroup();
-            RenderBase.OModel mdl = new RenderBase.OModel();
-            mdl.name = Path.GetFileNameWithoutExtension(fileName);
-            mdl.transform = new RenderBase.OMatrix();
+            RenderBase.OModel mdl = new RenderBase.OModel
+            {
+                name = Path.GetFileNameWithoutExtension(fileName),
+                transform = new RenderBase.OMatrix()
+            };
 
-            List<smdNode> nodeList = new List<smdNode>();
+            List<SmdNode> nodeList = new List<SmdNode>();
             while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
-                string line = readLine(reader);
+                string line = ReadLine(reader);
                 string[] parameters = Regex.Split(line, "\\s+");
 
                 switch (parameters[0])
@@ -208,7 +212,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         }
                         break;
                     case "nodes":
-                        line = readLine(reader);
+                        line = ReadLine(reader);
                         
                         parameters = Regex.Split(line, "\\s+");
 
@@ -216,15 +220,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         {
                             if (parameters.Length == 3)
                             {
-                                smdNode node = new smdNode();
-                                node.index = int.Parse(parameters[0]);
+                                SmdNode node = new SmdNode
+                                {
+                                    index = int.Parse(parameters[0])
+                                };
                                 int nameStart = parameters[1].IndexOf("\"") + 1;
                                 node.name = parameters[1].Substring(nameStart, parameters[1].LastIndexOf("\"") - nameStart);
                                 node.parentId = int.Parse(parameters[2]);
                                 nodeList.Add(node);
                             }
 
-                            line = readLine(reader);
+                            line = ReadLine(reader);
                             parameters = Regex.Split(line, "\\s+");
                         }
 
@@ -233,7 +239,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         bool isReference = false;
                         int timeIndex = -1;
 
-                        line = readLine(reader);
+                        line = ReadLine(reader);
                         parameters = Regex.Split(line, "\\s+");
 
                         RenderBase.OSkeletalAnimationBone[] boneArray = null;
@@ -259,7 +265,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                     if (timeIndex == 0)
                                     {
                                         RenderBase.OBone bone = new RenderBase.OBone();
-                                        foreach (smdNode node in nodeList) if (node.index == nodeIndex) { bone.name = node.name; bone.parentId = (short)node.parentId; }
+                                        foreach (SmdNode node in nodeList) if (node.index == nodeIndex) { bone.name = node.name; bone.parentId = (short)node.parentId; }
 
                                         bone.translation = new RenderBase.OVector3(translationX, translationY, translationZ);
                                         bone.rotation = new RenderBase.OVector3(rotationX, rotationY, rotationZ);
@@ -277,9 +283,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                             int index = 0;
                                             foreach (RenderBase.OBone b in mdl.skeleton)
                                             {
-                                                RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
-
-                                                bone.name = b.name;
+                                                RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone
+                                                {
+                                                    name = b.name
+                                                };
 
                                                 bone.translationX.exists = true;
                                                 bone.translationY.exists = true;
@@ -318,15 +325,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                 }
                             }
 
-                            line = readLine(reader);
+                            line = ReadLine(reader);
                             parameters = Regex.Split(line, "\\s+");
                         }
 
                         if (isReference)
                         {
-                            RenderBase.OSkeletalAnimation anim = new RenderBase.OSkeletalAnimation();
-                            anim.frameSize = timeIndex;
-                            anim.name = Path.GetFileNameWithoutExtension(fileName);
+                            RenderBase.OSkeletalAnimation anim = new RenderBase.OSkeletalAnimation
+                            {
+                                FrameSize = timeIndex,
+                                Name = Path.GetFileNameWithoutExtension(fileName)
+                            };
                             for (int i = 0; i < boneArray.Length; i++)
                             {
                                 boneArray[i].translationX.endFrame = timeIndex;
@@ -342,7 +351,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         break;
                     case "triangles":
-                        line = readLine(reader);
+                        line = ReadLine(reader);
                         parameters = Regex.Split(line, "\\s+");
 
                         RenderBase.OMesh obj = new RenderBase.OMesh();
@@ -360,7 +369,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                                 if (texture != oldTexture && oldTexture != null)
                                 {
-                                    mdl.material.Add(getMaterial(oldTexture));
+                                    mdl.material.Add(GetMaterial(oldTexture));
                                     obj.materialId = (ushort)materialId++;
                                     mdl.mesh.Add(obj);
                                     obj = new RenderBase.OMesh();
@@ -388,8 +397,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                     v = float.Parse(parameters[8], CultureInfo.InvariantCulture);
                                     joints = int.Parse(parameters[9]);
 
-                                    RenderBase.OVertex vertex = new RenderBase.OVertex();
-                                    vertex.diffuseColor = 0xffffffff;
+                                    RenderBase.OVertex vertex = new RenderBase.OVertex
+                                    {
+                                        diffuseColor = 0xffffffff
+                                    };
 
                                     int j = 10;
                                     for (int i = 0; i < joints; i++)
@@ -412,14 +423,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                 }
                             }
 
-                            line = readLine(reader);
+                            line = ReadLine(reader);
                             parameters = Regex.Split(line, "\\s+");
 
                             count = (count + 1) % 4;
                         }
 
                         //Add the last object
-                        mdl.material.Add(getMaterial(oldTexture));
+                        mdl.material.Add(GetMaterial(oldTexture));
                         obj.materialId = (ushort)materialId++;
                         mdl.mesh.Add(obj);
 
@@ -431,15 +442,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             return model;
         }
 
-        private static RenderBase.OMaterial getMaterial(string name)
+        private static RenderBase.OMaterial GetMaterial(string name)
         {
-            RenderBase.OMaterial material = new RenderBase.OMaterial();
-            material.name = "material_" + name;
-            material.name0 = name;
+            RenderBase.OMaterial material = new RenderBase.OMaterial
+            {
+                name = "material_" + name,
+                name0 = name
+            };
             return material;
         }
 
-        private static string readLine(StreamReader reader)
+        private static string ReadLine(StreamReader reader)
         {
             return reader.ReadLine().Trim();
         }

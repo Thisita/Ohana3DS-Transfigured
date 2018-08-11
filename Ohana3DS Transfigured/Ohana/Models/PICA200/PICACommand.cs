@@ -135,7 +135,7 @@
         public const ushort vertexShaderFloatUniformConfig = 0x2c0;
         public const ushort vertexShaderFloatUniformData = 0x2c1;
 
-        public enum vshAttribute
+        public enum VshAttribute
         {
             position = 0,
             normal = 1,
@@ -162,7 +162,7 @@
             quantity = 0x16
         }
 
-        public enum attributeFormatType
+        public enum AttributeFormatType
         {
             signedByte = 0,
             unsignedByte = 1,
@@ -170,32 +170,32 @@
             single = 3
         }
 
-        public struct attributeFormat
+        public struct AttributeFormat
         {
-            public attributeFormatType type;
+            public AttributeFormatType type;
             public uint attributeLength;
         }
 
-        public enum indexBufferFormat
+        public enum IndexBufferFormat
         {
             unsignedByte = 0,
             unsignedShort = 1
         }
 
-        public class fragmentSamplerAbsolute
+        public class FragmentSamplerAbsolute
         {
             public bool r, g, b;
             public bool d0, d1;
             public bool fresnel;
         }
 
-        public class fragmentSamplerInput
+        public class FragmentSamplerInput
         {
             public RenderBase.OFragmentSamplerInput r, g, b;
             public RenderBase.OFragmentSamplerInput d0, d1;
             public RenderBase.OFragmentSamplerInput fresnel;
 
-            public fragmentSamplerInput()
+            public FragmentSamplerInput()
             {
                 r = new RenderBase.OFragmentSamplerInput();
                 g = new RenderBase.OFragmentSamplerInput();
@@ -206,13 +206,13 @@
             }
         }
 
-        public class fragmentSamplerScale
+        public class FragmentSamplerScale
         {
             public RenderBase.OFragmentSamplerScale r, g, b;
             public RenderBase.OFragmentSamplerScale d0, d1;
             public RenderBase.OFragmentSamplerScale fresnel;
 
-            public fragmentSamplerScale()
+            public FragmentSamplerScale()
             {
                 r = new RenderBase.OFragmentSamplerScale();
                 g = new RenderBase.OFragmentSamplerScale();

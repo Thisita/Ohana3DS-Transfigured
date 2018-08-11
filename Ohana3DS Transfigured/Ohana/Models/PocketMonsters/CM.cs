@@ -18,14 +18,14 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
         /// </summary>
         /// <param name="data">The data</param>
         /// <returns>The Model group with the character meshes</returns>
-        public static RenderBase.OModelGroup load(Stream data)
+        public static RenderBase.OModelGroup Load(Stream data)
         {
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
-            OContainer container = PkmnContainer.load(data);
-            models = GfModel.load(new MemoryStream(container.content[0].data));
+            OContainer container = PkmnContainer.Load(data);
+            models = GfModel.Load(new MemoryStream(container.content[0].data));
 
-            List<RenderBase.OSkeletalAnimation> anms = GfMotion.load(new MemoryStream(container.content[1].data));
+            List<RenderBase.OSkeletalAnimation> anms = GfMotion.Load(new MemoryStream(container.content[1].data));
 
             foreach (RenderBase.OSkeletalAnimation anm in anms)
             {

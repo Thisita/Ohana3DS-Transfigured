@@ -17,12 +17,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
         /// </summary>
         /// <param name="data">The data</param>
         /// <returns>The Model group with the character meshes</returns>
-        public static RenderBase.OModelGroup load(Stream data)
+        public static RenderBase.OModelGroup Load(Stream data)
         {
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
-            OContainer container = PkmnContainer.load(data);
-            models = CM.load(new MemoryStream(container.content[1].data));
+            OContainer container = PkmnContainer.Load(data);
+            models = CM.Load(new MemoryStream(container.content[1].data));
 
             return models;
         }

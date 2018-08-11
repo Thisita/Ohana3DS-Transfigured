@@ -14,11 +14,11 @@ namespace Ohana3DS_Transfigured.GUI
         /// <param name="font">The font that will be used to render the text</param>
         /// <param name="maxWidth">The maximum space the text can use</param>
         /// <returns></returns>
-        public static string clampText(Graphics g, string text, Font font, int maxWidth)
+        public static string ClampText(Graphics g, string text, Font font, int maxWidth)
         {
             string outText = text;
             int i = 1;
-            while (measureText(g, outText, font).Width > maxWidth)
+            while (MeasureText(g, outText, font).Width > maxWidth)
             {
                 if (text.Length - i <= 0) return null;
                 while (text.Substring(text.Length - (i + 1), 1) == " ")
@@ -40,9 +40,13 @@ namespace Ohana3DS_Transfigured.GUI
         /// <param name="text">The text</param>
         /// <param name="font">Font used to draw the text</param>
         /// <returns></returns>
-        public static SizeF measureText(Graphics g, string text, Font font)
+        public static SizeF MeasureText(Graphics g, string text, Font font)
         {
-            if (text == null) return Size.Empty;
+            if (text == null)
+            {
+                return Size.Empty;
+            }
+
             StringFormat format = new StringFormat();
             RectangleF rect = new RectangleF(0, 0, 1000, 1000);
             CharacterRange[] ranges = { new CharacterRange(0, text.Length) };

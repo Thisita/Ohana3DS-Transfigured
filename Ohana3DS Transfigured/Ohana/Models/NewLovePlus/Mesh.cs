@@ -10,9 +10,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
         /// </summary>
         /// <param name="fileName">File Name of the SMES file</param>
         /// <returns></returns>
-        public static void load(string fileName, RenderBase.OModel model)
+        public static void Load(string fileName, RenderBase.OModel model)
         {
-            load(new MemoryStream(File.ReadAllBytes(fileName)), model);
+            Load(new MemoryStream(File.ReadAllBytes(fileName)), model);
         }
 
         /// <summary>
@@ -21,16 +21,16 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
         /// </summary>
         /// <param name="data">Stream of the SMES file.</param>
         /// <returns></returns>
-        public static void load(Stream data, RenderBase.OModel model, bool ignoreMaterial = false)
+        public static void Load(Stream data, RenderBase.OModel model, bool ignoreMaterial = false)
         {
             BinaryReader input = new BinaryReader(data);
 
             //The node indices points to the index directly relative to the tree index on the Skeleton
             //Therefore, we must build a table to translate from the Skeleton Index to the absolute Bone Tree Index
             List<int> nodeBinding = new List<int>();
-            buildNodeBinding(model.skeleton, 0, ref nodeBinding);
+            BuildNodeBinding(model.skeleton, 0, ref nodeBinding);
 
-            string smesMagic = IOUtils.readStringWithLength(input, 4);
+            string smesMagic = IOUtils.ReadStringWithLength(input, 4);
             uint dataTableOffset = input.ReadUInt32();
             uint meshCount = input.ReadUInt32();
             for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
@@ -61,7 +61,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                 bool hasData = true;
                 while (hasData)
                 {
-                    string magic = IOUtils.readStringWithLength(input, 4);
+                    string magic = IOUtils.ReadStringWithLength(input, 4);
                     uint sectionLength = input.ReadUInt32();
                     long startOffset = data.Position;
                     
@@ -87,12 +87,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                                 long position = data.Position;
                                 data.Seek(vertexBufferOffset + index * vertexStride, SeekOrigin.Begin);
 
-                                RenderBase.OVertex vertex = new RenderBase.OVertex();
-                                vertex.diffuseColor = 0xffffffff;
-                                vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                                vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                                vertex.tangent = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                                vertex.texture0 = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle());
+                                RenderBase.OVertex vertex = new RenderBase.OVertex
+                                {
+                                    diffuseColor = 0xffffffff,
+                                    position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                                    normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                                    tangent = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()),
+                                    texture0 = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle())
+                                };
 
                                 if (model.skeleton.Count > 0)
                                 {
@@ -121,7 +123,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
                                     }
                                 }
 
-                                MeshUtils.calculateBounds(model, vertex);
+                                MeshUtils.CalculateBounds(model, vertex);
                                 obj.vertices.Add(vertex);
 
                                 data.Seek(position, SeekOrigin.Begin);
@@ -145,13 +147,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.NewLovePlus
         /// <param name="skeleton">The skeleton</param>
         /// <param name="index">Index of the current bone (root bone when it's not a recursive call)</param>
         /// <param name="nodeBinding">List with the table to bind the nodes to the skeleton</param>
-        private static void buildNodeBinding(List<RenderBase.OBone> skeleton, int index, ref List<int> nodeBinding)
+        private static void BuildNodeBinding(List<RenderBase.OBone> skeleton, int index, ref List<int> nodeBinding)
         {
             nodeBinding.Add(index);
 
             for (int i = 0; i < skeleton.Count; i++)
             {
-                if (skeleton[i].parentId == index) buildNodeBinding(skeleton, i, ref nodeBinding);
+                if (skeleton[i].parentId == index) BuildNodeBinding(skeleton, i, ref nodeBinding);
             }
         }
     }

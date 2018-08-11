@@ -18,10 +18,7 @@ namespace Ohana3DS_Transfigured
         private const int WM_NCHITTEST = 0x84;
         private const int WM_NCLBUTTONDOWN = 0xa1;
 
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        [DllImport("user32.dll")]
-        public static extern bool ReleaseCapture();
+        
 
         public bool Resizable
         {
@@ -76,12 +73,12 @@ namespace Ohana3DS_Transfigured
 
         public void SuspendDrawing()
         {
-            SendMessage(Handle, WM_SETREDRAW, 0, 0);
+            NativeMethods.SendMessage(Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
         }
 
         public void ResumeDrawing()
         {
-            SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            NativeMethods.SendMessage(Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
             Refresh();
         }
 
@@ -159,8 +156,8 @@ namespace Ohana3DS_Transfigured
         {
             if (e.Button == MouseButtons.Left && e.Y < 28)
             {
-                ReleaseCapture();
-                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                NativeMethods.ReleaseCapture();
+                NativeMethods.SendMessage(Handle, WM_NCLBUTTONDOWN, new IntPtr(HT_CAPTION), IntPtr.Zero);
             }
         }
 
@@ -184,7 +181,7 @@ namespace Ohana3DS_Transfigured
 
         private void OForm_MouseMove(object sender, MouseEventArgs e)
         {
-            SendMessage(Handle, WM_NCHITTEST, 0, e.X | (e.Y << 16));
+            NativeMethods.SendMessage(Handle, WM_NCHITTEST, IntPtr.Zero, new IntPtr(e.X | (e.Y << 16)));
         }
 
         private void BtnClose_MouseEnter(object sender, EventArgs e)

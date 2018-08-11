@@ -13,9 +13,16 @@
         /// <param name="disposing">verdade se for necessário descartar os recursos gerenciados; caso contrário, falso.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+                if (renderer != null)
+                {
+                    renderer.Dispose();
+                }
             }
             base.Dispose(disposing);
         }

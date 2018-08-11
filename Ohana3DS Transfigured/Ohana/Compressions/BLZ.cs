@@ -10,7 +10,7 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
         /// </summary>
         /// <param name="data">Data to be decompressed</param>
         /// <returns></returns>
-        public static byte[] decompress(Stream data)
+        public static byte[] Decompress(Stream data)
         {
             data.Seek(0, SeekOrigin.Begin);
             byte[] input = new byte[data.Length];
@@ -18,8 +18,8 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
             data.Close();
 
             uint inputOffset = (uint)input.Length;
-            int incrementalLength = readInt(input, ref inputOffset);
-            uint lengths = readUInt(input, ref inputOffset);
+            int incrementalLength = ReadInt(input, ref inputOffset);
+            uint lengths = ReadUInt(input, ref inputOffset);
             uint headerLength = lengths >> 24;
             uint encodedLength = lengths & 0xffffff;
             uint decodedLength = (uint)((int)encodedLength + incrementalLength);
@@ -36,18 +36,18 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
             {
                 if ((mask >>= 1) == 0)
                 {
-                    header = readByte(input, ref inputOffset);
+                    header = ReadByte(input, ref inputOffset);
                     mask = 0x80;
                 }
 
                 if ((header & mask) == 0)
                 {
                     if (outputOffset == output.Length) break;
-                    output[outputOffset++] = readByte(input, ref inputOffset);
+                    output[outputOffset++] = ReadByte(input, ref inputOffset);
                 }
                 else
                 {
-                    ushort value = readUShort(input, ref inputOffset);
+                    ushort value = ReadUShort(input, ref inputOffset);
                     int length = (value >> 12) + 3;
                     int position = (value & 0xfff) + 3;
                     while (length > 0)
@@ -60,12 +60,12 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
                 }
             }
 
-            output = invert(output);
+            output = Invert(output);
             Buffer.BlockCopy(input, 0, output, 0, (int)(input.Length - encodedLength));
             return output;
         }
 
-        private static byte[] invert(byte[] data)
+        private static byte[] Invert(byte[] data)
         {
             byte[] output = new byte[data.Length];
             for (int i = 0; i < data.Length; i++)
@@ -75,19 +75,19 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
             return output;
         }
 
-        private static byte readByte(byte[] input, ref uint address)
+        private static byte ReadByte(byte[] input, ref uint address)
         {
             return input[--address];
         }
 
-        private static ushort readUShort(byte[] input, ref uint address)
+        private static ushort ReadUShort(byte[] input, ref uint address)
         {
             uint high = input[--address];
             uint low = input[--address];
             return (ushort)(low | (high << 8));
         }
 
-        private static uint readUInt(byte[] input, ref uint address)
+        private static uint ReadUInt(byte[] input, ref uint address)
         {
             uint a = input[--address];
             uint b = input[--address];
@@ -96,7 +96,7 @@ namespace Ohana3DS_Transfigured.Ohana.Compressions
             return d | (c << 8) | (b << 16) | (a << 24);
         }
 
-        private static int readInt(byte[] input, ref uint address)
+        private static int ReadInt(byte[] input, ref uint address)
         {
             uint a = input[--address];
             uint b = input[--address];

@@ -9,9 +9,9 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns>The container data</returns>
-        public static OContainer load(string fileName)
+        public static OContainer Load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return Load(new FileStream(fileName, FileMode.Open));
         }
 
         /// <summary>
@@ -19,19 +19,19 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream of the data</param>
         /// <returns>The container data</returns>
-        public static OContainer load(Stream data)
+        public static OContainer Load(Stream data)
         {
             OContainer output = new OContainer();
             BinaryReader input = new BinaryReader(data);
 
-            string sarcMagic = IOUtils.readStringWithLength(input, 4);
+            string sarcMagic = IOUtils.ReadStringWithLength(input, 4);
             ushort sarcHeaderLength = input.ReadUInt16();
             ushort endian = input.ReadUInt16();
             uint fileLength = input.ReadUInt32();
             uint dataOffset = input.ReadUInt32();
             uint dataPadding = input.ReadUInt32();
 
-            string sfatMagic = IOUtils.readStringWithLength(input, 4);
+            string sfatMagic = IOUtils.ReadStringWithLength(input, 4);
             ushort sfatHeaderLength = input.ReadUInt16();
             ushort entries = input.ReadUInt16();
             uint hashMultiplier = input.ReadUInt32();
@@ -46,15 +46,17 @@ namespace Ohana3DS_Transfigured.Ohana.Containers
                 uint offset = input.ReadUInt32();
                 uint length = input.ReadUInt32() - offset;
 
-                string name = IOUtils.readString(input, (uint)(sfntOffset + nameOffset));
+                string name = IOUtils.ReadString(input, (uint)(sfntOffset + nameOffset));
                 data.Seek(offset + dataOffset, SeekOrigin.Begin);
                 byte[] buffer = new byte[length];
                 data.Read(buffer, 0, buffer.Length);
-                if (name == "") name = string.Format("file_{0:D5}{1}", i, FileIO.getExtension(buffer));
+                if (name == "") name = string.Format("file_{0:D5}{1}", i, FileIO.GetExtension(buffer));
 
-                OContainer.fileEntry entry = new OContainer.fileEntry();
-                entry.name = name;
-                entry.data = buffer;
+                OContainer.FileEntry entry = new OContainer.FileEntry
+                {
+                    name = name,
+                    data = buffer
+                };
                 output.content.Add(entry);
             }
 

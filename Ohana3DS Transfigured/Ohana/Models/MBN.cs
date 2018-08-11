@@ -11,7 +11,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 {
     class MBN
     {
-        private enum vtxAttributeType
+        private enum VtxAttributeType
         {
             position = 0,
             normal = 1,
@@ -23,7 +23,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             unk1 = 7
         }
 
-        private enum vtxAttributeQuantization
+        private enum VtxAttributeQuantization
         {
             single = 0,
             unsignedByte = 1,
@@ -31,23 +31,23 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             signedShort = 3
         }
 
-        private class vtxAttribute
+        private class VtxAttribute
         {
-            public vtxAttributeType type;
-            public vtxAttributeQuantization format;
+            public VtxAttributeType type;
+            public VtxAttributeQuantization format;
             public uint offset;
             public float scale;
         }
 
-        private class vtxEntry
+        private class VtxEntry
         {
-            public List<vtxAttribute> attributes = new List<vtxAttribute>();
+            public List<VtxAttribute> attributes = new List<VtxAttribute>();
             public uint length;
             public uint stride;
             public byte[] buffer;
         }
 
-        private class idxEntry
+        private class IdxEntry
         {
             public List<uint> nodeList = new List<uint>();
             public uint primitiveCount;
@@ -56,7 +56,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             public ushort[] buffer;
         }
 
-        public static RenderBase.OModelGroup load(string fileName)
+        public static RenderBase.OModelGroup Load(string fileName)
         {
             FileStream data = new FileStream(fileName, FileMode.Open);
             BinaryReader input = new BinaryReader(data);
@@ -69,7 +69,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             bool isBCHLoaded = false;
             if (File.Exists(bchFile))
             {
-                models = BCH.load(bchFile);
+                models = BCH.Load(bchFile);
                 model = models.model[0];
                 models.model.Clear();
                 isBCHLoaded = true;
@@ -77,8 +77,10 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             else
             {
                 models = new RenderBase.OModelGroup();
-                model = new RenderBase.OModel();
-                model.name = "model";
+                model = new RenderBase.OModel
+                {
+                    name = "model"
+                };
                 model.material.Add(new RenderBase.OMaterial());
             }
 
@@ -90,18 +92,20 @@ namespace Ohana3DS_Transfigured.Ohana.Models
             uint mode = input.ReadUInt32();
             uint meshCount = input.ReadUInt32();
 
-            List<vtxEntry> vtxDescriptors = new List<vtxEntry>();
-            List<idxEntry> idxDescriptors = new List<idxEntry>();
+            List<VtxEntry> vtxDescriptors = new List<VtxEntry>();
+            List<IdxEntry> idxDescriptors = new List<IdxEntry>();
 
             for (int i = 0; i < meshCount; i++)
             {
-                if (mode == 1 && i == 0) vtxDescriptors.Add(getVtxDescriptor(input));
+                if (mode == 1 && i == 0) vtxDescriptors.Add(GetVtxDescriptor(input));
 
                 uint facesCount = input.ReadUInt32();
                 for (int j = 0; j < facesCount; j++)
                 {
-                    idxEntry face = new idxEntry();
-                    face.meshIndex = i;
+                    IdxEntry face = new IdxEntry
+                    {
+                        meshIndex = i
+                    };
                     uint nodesCount = input.ReadUInt32();
                     for (int k = 0; k < nodesCount; k++) face.nodeList.Add(input.ReadUInt32());
                     face.primitiveCount = input.ReadUInt32();
@@ -110,7 +114,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     {
                         face.buffer = new ushort[face.primitiveCount];
                         for (int k = 0; k < face.primitiveCount; k++) face.buffer[k] = input.ReadUInt16();
-                        alignWord(input);
+                        AlignWord(input);
                     }
 
                     idxDescriptors.Add(face);
@@ -120,14 +124,14 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 {
                     if (isDataWithinHeader)
                     {
-                        vtxEntry desc = getVtxDescriptor(input);
+                        VtxEntry desc = GetVtxDescriptor(input);
                         desc.buffer = new byte[desc.length];
                         input.Read(desc.buffer, 0, desc.buffer.Length);
                         vtxDescriptors.Add(desc);
-                        alignWord(input);
+                        AlignWord(input);
                     }
                     else
-                        vtxDescriptors.Add(getVtxDescriptor(input));
+                        vtxDescriptors.Add(GetVtxDescriptor(input));
                 }
             }
 
@@ -138,13 +142,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 for (int i = 0; i < meshCount; i++)
                 {
                     byte index = input.ReadByte();
-                    objNameTable.Add(IOUtils.readString(input, (uint)data.Position, true));
+                    objNameTable.Add(IOUtils.ReadString(input, (uint)data.Position, true));
                 }
             }
 
-            if (!isDataWithinHeader) align(input);
+            if (!isDataWithinHeader) Align(input);
             byte[] vtxBuffer = null;
-            vtxEntry currVertex = null;
+            VtxEntry currVertex = null;
             int faceIndex = 0;
 
             for (int i = 0; i < meshCount; i++)
@@ -156,7 +160,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                     {
                         vtxBuffer = new byte[vtxDescriptors[i].length];
                         input.Read(vtxBuffer, 0, vtxBuffer.Length);
-                        align(input);
+                        Align(input);
                     }
                     else
                         vtxBuffer = currVertex.buffer;
@@ -170,20 +174,22 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 }
                 else
                 {
-                    obj = new RenderBase.OMesh();
-                    obj.name = "mesh_" + i.ToString();
+                    obj = new RenderBase.OMesh
+                    {
+                        name = "mesh_" + i.ToString()
+                    };
                 }
 
                 for (int j = 0; j < currVertex.attributes.Count; j++)
                 {
                     switch (currVertex.attributes[j].type)
                     {
-                        case vtxAttributeType.normal: obj.hasNormal = true; break;
-                        case vtxAttributeType.color: obj.hasColor = true; break;
-                        case vtxAttributeType.textureCoordinate0: obj.texUVCount = 1; break;
-                        case vtxAttributeType.textureCoordinate1: obj.texUVCount = 2; break;
-                        case vtxAttributeType.boneIndex: obj.hasNode = true; break;
-                        case vtxAttributeType.boneWeight: obj.hasWeight = true; break;
+                        case VtxAttributeType.normal: obj.hasNormal = true; break;
+                        case VtxAttributeType.color: obj.hasColor = true; break;
+                        case VtxAttributeType.textureCoordinate0: obj.texUVCount = 1; break;
+                        case VtxAttributeType.textureCoordinate1: obj.texUVCount = 2; break;
+                        case VtxAttributeType.boneIndex: obj.hasNode = true; break;
+                        case VtxAttributeType.boneWeight: obj.hasWeight = true; break;
                     }
                 }
 
@@ -198,47 +204,49 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                         else
                             index = input.ReadUInt16();
 
-                        RenderBase.OVertex vertex = new RenderBase.OVertex();
-                        vertex.diffuseColor = 0xffffffff;
+                        RenderBase.OVertex vertex = new RenderBase.OVertex
+                        {
+                            diffuseColor = 0xffffffff
+                        };
                         for (int k = 0; k < currVertex.attributes.Count; k++)
                         {
-                            vtxAttribute att = currVertex.attributes[k];
+                            VtxAttribute att = currVertex.attributes[k];
                             int pos = (int)(index * currVertex.stride + att.offset);
                             float scale = att.scale;
                             switch (currVertex.attributes[k].type)
                             {
-                                case vtxAttributeType.position: vertex.position = getVector3(vtxBuffer, pos, att.format, scale); break;
-                                case vtxAttributeType.normal: vertex.normal = getVector3(vtxBuffer, pos, att.format, scale); break;
-                                case vtxAttributeType.color:
-                                    RenderBase.OVector4 c = getVector4(vtxBuffer, pos, att.format, scale);
-                                    uint r = MeshUtils.saturate(c.x * 0xff);
-                                    uint g = MeshUtils.saturate(c.y * 0xff);
-                                    uint b = MeshUtils.saturate(c.z * 0xff);
-                                    uint a = MeshUtils.saturate(c.w * 0xff);
+                                case VtxAttributeType.position: vertex.position = GetVector3(vtxBuffer, pos, att.format, scale); break;
+                                case VtxAttributeType.normal: vertex.normal = GetVector3(vtxBuffer, pos, att.format, scale); break;
+                                case VtxAttributeType.color:
+                                    RenderBase.OVector4 c = GetVector4(vtxBuffer, pos, att.format, scale);
+                                    uint r = MeshUtils.Saturate(c.x * 0xff);
+                                    uint g = MeshUtils.Saturate(c.y * 0xff);
+                                    uint b = MeshUtils.Saturate(c.z * 0xff);
+                                    uint a = MeshUtils.Saturate(c.w * 0xff);
                                     vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                     break;
-                                case vtxAttributeType.textureCoordinate0: vertex.texture0 = getVector2(vtxBuffer, pos, att.format, scale); break;
-                                case vtxAttributeType.textureCoordinate1: vertex.texture1 = getVector2(vtxBuffer, pos, att.format, scale); break;
-                                case vtxAttributeType.boneIndex:
+                                case VtxAttributeType.textureCoordinate0: vertex.texture0 = GetVector2(vtxBuffer, pos, att.format, scale); break;
+                                case VtxAttributeType.textureCoordinate1: vertex.texture1 = GetVector2(vtxBuffer, pos, att.format, scale); break;
+                                case VtxAttributeType.boneIndex:
                                     byte n0 = vtxBuffer[pos];
                                     byte n1 = vtxBuffer[pos + 1];
                                     vertex.node.Add((int)idxDescriptors[faceIndex].nodeList[n0]);
                                     vertex.node.Add((int)idxDescriptors[faceIndex].nodeList[n1]);
                                     break;
-                                case vtxAttributeType.boneWeight:
-                                    RenderBase.OVector2 w = getVector2(vtxBuffer, pos, att.format, scale);
+                                case VtxAttributeType.boneWeight:
+                                    RenderBase.OVector2 w = GetVector2(vtxBuffer, pos, att.format, scale);
                                     vertex.weight.Add(w.x);
                                     vertex.weight.Add(w.y);
                                     break;
                             }
                         }
 
-                        MeshUtils.calculateBounds(model, vertex);
+                        MeshUtils.CalculateBounds(model, vertex);
                         obj.vertices.Add(vertex);
                     }
 
                     faceIndex++;
-                    if (!isDataWithinHeader) align(input);
+                    if (!isDataWithinHeader) Align(input);
                     if (faceIndex >= idxDescriptors.Count) break;
                     if (idxDescriptors[faceIndex].meshIndex == i) continue;
                     break;
@@ -258,17 +266,18 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// </summary>
         /// <param name="input">The Binary Reader of the mbn file</param>
         /// <returns></returns>
-        private static vtxEntry getVtxDescriptor(BinaryReader input)
+        private static VtxEntry GetVtxDescriptor(BinaryReader input)
         {
-            vtxEntry vtx = new vtxEntry();
+            VtxEntry vtx = new VtxEntry();
             uint attributesCount = input.ReadUInt32();
             for (int j = 0; j < attributesCount; j++)
             {
-                vtxAttribute att = new vtxAttribute();
-
-                att.type = (vtxAttributeType)input.ReadUInt32();
-                if (att.type != vtxAttributeType.color) while ((vtx.stride & 1) != 0) vtx.stride++;
-                att.format = (vtxAttributeQuantization)input.ReadUInt32();
+                VtxAttribute att = new VtxAttribute
+                {
+                    type = (VtxAttributeType)input.ReadUInt32()
+                };
+                if (att.type != VtxAttributeType.color) while ((vtx.stride & 1) != 0) vtx.stride++;
+                att.format = (VtxAttributeQuantization)input.ReadUInt32();
                 att.scale = input.ReadSingle();
                 att.offset = vtx.stride;
 
@@ -277,21 +286,21 @@ namespace Ohana3DS_Transfigured.Ohana.Models
                 uint len = 0;
                 switch (att.format)
                 {
-                    case vtxAttributeQuantization.single: len = 4; break;
-                    case vtxAttributeQuantization.unsignedByte: len = 1; break;
-                    case vtxAttributeQuantization.signedByte: len = 1; break;
-                    case vtxAttributeQuantization.signedShort: len = 2; break;
+                    case VtxAttributeQuantization.single: len = 4; break;
+                    case VtxAttributeQuantization.unsignedByte: len = 1; break;
+                    case VtxAttributeQuantization.signedByte: len = 1; break;
+                    case VtxAttributeQuantization.signedShort: len = 2; break;
                 }
                 switch (att.type)
                 {
-                    case vtxAttributeType.position: vtx.stride += 3 * len; break;
-                    case vtxAttributeType.normal: vtx.stride += 3 * len; break;
-                    case vtxAttributeType.color: vtx.stride += 4 * len; break;
-                    case vtxAttributeType.textureCoordinate0: vtx.stride += 2 * len; break;
-                    case vtxAttributeType.textureCoordinate1: vtx.stride += 2 * len; break;
-                    case vtxAttributeType.boneIndex: vtx.stride += 2 * len; break;
-                    case vtxAttributeType.boneWeight: vtx.stride += 2 * len; break;
-                    case vtxAttributeType.unk1: vtx.stride += 2 * len; break;
+                    case VtxAttributeType.position: vtx.stride += 3 * len; break;
+                    case VtxAttributeType.normal: vtx.stride += 3 * len; break;
+                    case VtxAttributeType.color: vtx.stride += 4 * len; break;
+                    case VtxAttributeType.textureCoordinate0: vtx.stride += 2 * len; break;
+                    case VtxAttributeType.textureCoordinate1: vtx.stride += 2 * len; break;
+                    case VtxAttributeType.boneIndex: vtx.stride += 2 * len; break;
+                    case VtxAttributeType.boneWeight: vtx.stride += 2 * len; break;
+                    case VtxAttributeType.unk1: vtx.stride += 2 * len; break;
                     default: throw new Exception("MBN: Unknown Vertex Attribute type, can't calculate Stride! STOP!");
                 }
             }
@@ -309,23 +318,23 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="q">Quantization of the data</param>
         /// <param name="scale">Scale of the vector</param>
         /// <returns></returns>
-        private static RenderBase.OVector2 getVector2(byte[] buffer, int pos, vtxAttributeQuantization q, float scale)
+        private static RenderBase.OVector2 GetVector2(byte[] buffer, int pos, VtxAttributeQuantization q, float scale)
         {
             switch (q)
             {
-                case vtxAttributeQuantization.single:
+                case VtxAttributeQuantization.single:
                     return new RenderBase.OVector2(
                         BitConverter.ToSingle(buffer, pos) * scale,
                         BitConverter.ToSingle(buffer, pos + 4) * scale);
-                case vtxAttributeQuantization.unsignedByte:
+                case VtxAttributeQuantization.unsignedByte:
                     return new RenderBase.OVector2(
                         buffer[pos] * scale,
                         buffer[pos + 1] * scale);
-                case vtxAttributeQuantization.signedByte:
+                case VtxAttributeQuantization.signedByte:
                     return new RenderBase.OVector2(
                         (sbyte)buffer[pos] * scale,
                         (sbyte)buffer[pos + 1] * scale);
-                case vtxAttributeQuantization.signedShort:
+                case VtxAttributeQuantization.signedShort:
                     return new RenderBase.OVector2(
                         BitConverter.ToInt16(buffer, pos) * scale,
                         BitConverter.ToInt16(buffer, pos + 2) * scale);
@@ -343,26 +352,26 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="q">Quantization of the data</param>
         /// <param name="scale">Scale of the vector</param>
         /// <returns></returns>
-        private static RenderBase.OVector3 getVector3(byte[] buffer, int pos, vtxAttributeQuantization q, float scale)
+        private static RenderBase.OVector3 GetVector3(byte[] buffer, int pos, VtxAttributeQuantization q, float scale)
         {
             switch (q)
             {
-                case vtxAttributeQuantization.single:
+                case VtxAttributeQuantization.single:
                     return new RenderBase.OVector3(
                         BitConverter.ToSingle(buffer, pos) * scale,
                         BitConverter.ToSingle(buffer, pos + 4) * scale,
                         BitConverter.ToSingle(buffer, pos + 8) * scale);
-                case vtxAttributeQuantization.unsignedByte:
+                case VtxAttributeQuantization.unsignedByte:
                     return new RenderBase.OVector3(
                         buffer[pos] * scale,
                         buffer[pos + 1] * scale,
                         buffer[pos + 2] * scale);
-                case vtxAttributeQuantization.signedByte:
+                case VtxAttributeQuantization.signedByte:
                     return new RenderBase.OVector3(
                         (sbyte)buffer[pos] * scale,
                         (sbyte)buffer[pos + 1] * scale,
                         (sbyte)buffer[pos + 2] * scale);
-                case vtxAttributeQuantization.signedShort:
+                case VtxAttributeQuantization.signedShort:
                     return new RenderBase.OVector3(
                         BitConverter.ToInt16(buffer, pos) * scale,
                         BitConverter.ToInt16(buffer, pos + 2) * scale,
@@ -381,29 +390,29 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         /// <param name="q">Quantization of the data</param>
         /// <param name="scale">Scale of the vector</param>
         /// <returns></returns>
-        private static RenderBase.OVector4 getVector4(byte[] buffer, int pos, vtxAttributeQuantization q, float scale)
+        private static RenderBase.OVector4 GetVector4(byte[] buffer, int pos, VtxAttributeQuantization q, float scale)
         {
             switch (q)
             {
-                case vtxAttributeQuantization.single:
+                case VtxAttributeQuantization.single:
                     return new RenderBase.OVector4(
                         BitConverter.ToSingle(buffer, pos) * scale,
                         BitConverter.ToSingle(buffer, pos + 4) * scale,
                         BitConverter.ToSingle(buffer, pos + 8) * scale,
                         BitConverter.ToSingle(buffer, pos + 12) * scale);
-                case vtxAttributeQuantization.unsignedByte:
+                case VtxAttributeQuantization.unsignedByte:
                     return new RenderBase.OVector4(
                         buffer[pos] * scale,
                         buffer[pos + 1] * scale,
                         buffer[pos + 2] * scale,
                         buffer[pos + 3] * scale);
-                case vtxAttributeQuantization.signedByte:
+                case VtxAttributeQuantization.signedByte:
                     return new RenderBase.OVector4(
                         (sbyte)buffer[pos] * scale,
                         (sbyte)buffer[pos + 1] * scale,
                         (sbyte)buffer[pos + 2] * scale,
                         (sbyte)buffer[pos + 3] * scale);
-                case vtxAttributeQuantization.signedShort:
+                case VtxAttributeQuantization.signedShort:
                     return new RenderBase.OVector4(
                         BitConverter.ToInt16(buffer, pos) * scale,
                         BitConverter.ToInt16(buffer, pos + 2) * scale,
@@ -419,7 +428,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         ///     It will align to the nearest 32 bytes boundary.
         /// </summary>
         /// <param name="input">The Binary Reader of the mbn file</param>
-        private static void align(BinaryReader input)
+        private static void Align(BinaryReader input)
         {
             while ((input.BaseStream.Position & 0x1f) != 0) input.ReadByte();
         }
@@ -429,7 +438,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
         ///     It will align to the nearest 32-bits Word.
         /// </summary>
         /// <param name="input">The Binary Reader of the mbn file</param>
-        private static void alignWord(BinaryReader input)
+        private static void AlignWord(BinaryReader input)
         {
             while ((input.BaseStream.Position & 3) != 0) input.ReadByte();
         }
